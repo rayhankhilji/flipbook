@@ -17,3 +17,27 @@ public enum InterfaceDensity: String, Sendable, Codable, CaseIterable {
     case compact
     case comfortable
 }
+
+/// App-wide chrome appearance, independent of the per-book reading theme.
+/// `.system` follows macOS; the other two pin the window's color scheme.
+public enum AppAppearance: String, Sendable, Codable, CaseIterable {
+    case system
+    case light
+    case dark
+
+    public var label: String {
+        switch self {
+        case .system: "System"
+        case .light: "Light"
+        case .dark: "Dark"
+        }
+    }
+
+    public var symbol: String {
+        switch self {
+        case .system: "circle.lefthalf.filled"
+        case .light: "sun.max"
+        case .dark: "moon.stars"
+        }
+    }
+}

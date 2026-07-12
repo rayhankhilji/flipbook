@@ -34,6 +34,20 @@ final class AppModel {
         ColorTokens.accent(for: settings.accentColorID)
     }
 
+    /// Nil means "follow the system" — the two explicit cases pin the window's scheme.
+    var preferredColorScheme: ColorScheme? {
+        switch settings.appAppearance {
+        case .system: nil
+        case .light: .light
+        case .dark: .dark
+        }
+    }
+
+    func setAppearance(_ appearance: AppAppearance) {
+        settings.appAppearance = appearance
+        save()
+    }
+
     /// Animation tokens scaled by the user's Settings > Display speed preference.
     func animation(_ base: AnimationKind) -> Animation {
         switch base {

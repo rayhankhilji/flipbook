@@ -17,6 +17,7 @@ struct FlipbookApp: App {
             LibraryView()
                 .environment(appModel)
                 .tint(appModel.accentColor)
+                .preferredColorScheme(appModel.preferredColorScheme)
                 .frame(minWidth: 720, minHeight: 480)
         }
         .modelContainer(modelContainer)

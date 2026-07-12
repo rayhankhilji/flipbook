@@ -18,6 +18,8 @@ struct SettingsRootView: View {
                 .tabItem { Label("Navigation", systemImage: "hand.draw") }
             AppearanceSettingsTab()
                 .tabItem { Label("Appearance", systemImage: "paintbrush") }
+            AISettingsTab()
+                .tabItem { Label("AI", systemImage: "sparkles") }
         }
         .frame(width: 480)
     }
@@ -189,6 +191,21 @@ private struct AppearanceSettingsTab: View {
         @Bindable var settings = appModel.settings
 
         Form {
+            Section("Theme") {
+                Picker("Appearance", selection: Binding(
+                    get: { settings.appAppearance },
+                    set: { appModel.setAppearance($0) }
+                )) {
+                    ForEach(AppAppearance.allCases, id: \.self) { option in
+                        Label(option.label, systemImage: option.symbol).tag(option)
+                    }
+                }
+                .pickerStyle(.segmented)
+                Text("Controls the app's window, sidebar, and menus. Page content is styled by the per-book reading theme instead.")
+                    .font(TypographyTokens.caption)
+                    .foregroundStyle(ColorTokens.chromeSecondaryText)
+            }
+
             Section("Accent") {
                 HStack(spacing: SpacingTokens.md) {
                     ForEach(ColorTokens.accentOptions) { option in
@@ -221,5 +238,123 @@ private struct AppearanceSettingsTab: View {
             }
         }
         .formStyle(.grouped)
+    }
+}
+
+// MARK: - AI (bring-your-own-key)
+
+private struct AISettingsTab: View {
+    @Environment(AppModel.self) private var appModel
+
+    @State private var apiKeyField = ""
+    @State private var hasStoredKey = AIKeychain.hasKey
+    @State private var testState: TestState = .idle
+
+    private enum TestState: Equatable {
+        case idle, testing, success, failure(String)
+    }
+
+    var body: some View {
+        @Bindable var settings = appModel.settings
+
+        Form {
+            Section("Anthropic API Key") {
+                Text("Flipbook's AI features use your own Anthropic API key. It's stored only in your Mac's Keychain and sent directly to Anthropic over a secure connection — never to us.")
+                    .font(TypographyTokens.caption)
+                    .foregroundStyle(ColorTokens.chromeSecondaryText)
+
+                SecureField(hasStoredKey ? "•••• stored in Keychain" : "sk-ant-…", text: $apiKeyField)
+                    .textFieldStyle(.roundedBorder)
+
+                HStack {
+                    Button("Save Key") {
+                        AIKeychain.save(apiKeyField)
+                        apiKeyField = ""
+                        hasStoredKey = AIKeychain.hasKey
+                        testState = .idle
+                    }
+                    .buttonStyle(.flipbook(prominent: true))
+                    .disabled(apiKeyField.trimmingCharacters(in: .whitespaces).isEmpty)
+
+                    if hasStoredKey {
+                        Button("Remove", role: .destructive) {
+                            AIKeychain.delete()
+                            hasStoredKey = false
+                            settings.aiEnabled = false
+                            appModel.save()
+                            testState = .idle
+                        }
+                    }
+                    Spacer()
+                    testStatusView
+                }
+
+                Button {
+                    runTest()
+                } label: {
+                    Label("Test Connection", systemImage: "checkmark.seal")
+                }
+                .disabled(!hasStoredKey || testState == .testing)
+
+                Link("Get an API key at console.anthropic.com",
+                     destination: URL(string: "https://console.anthropic.com/settings/keys")!)
+                    .font(TypographyTokens.caption)
+            }
+
+            Section("Features") {
+                Toggle("Enable AI features", isOn: $settings.aiEnabled)
+                    .disabled(!hasStoredKey)
+                    .onChange(of: settings.aiEnabled) { _, _ in appModel.save() }
+
+                Picker("Model", selection: Binding(
+                    get: { settings.aiModelID },
+                    set: { settings.aiModelID = $0; appModel.save() }
+                )) {
+                    ForEach(AIModelCatalog.all) { option in
+                        Text(option.name).tag(option.id)
+                    }
+                }
+                Text(AIModelCatalog.option(for: settings.aiModelID).blurb)
+                    .font(TypographyTokens.caption)
+                    .foregroundStyle(ColorTokens.chromeSecondaryText)
+
+                Toggle("Allow web search in conversations", isOn: $settings.aiWebSearchEnabled)
+                    .disabled(!hasStoredKey)
+                    .onChange(of: settings.aiWebSearchEnabled) { _, _ in appModel.save() }
+            }
+        }
+        .formStyle(.grouped)
+    }
+
+    @ViewBuilder
+    private var testStatusView: some View {
+        switch testState {
+        case .idle:
+            EmptyView()
+        case .testing:
+            ProgressView().controlSize(.small)
+        case .success:
+            Label("Connected", systemImage: "checkmark.circle.fill")
+                .foregroundStyle(.green)
+                .font(TypographyTokens.caption)
+        case .failure(let message):
+            Label(message, systemImage: "exclamationmark.triangle.fill")
+                .foregroundStyle(.orange)
+                .font(TypographyTokens.caption)
+                .lineLimit(2)
+        }
+    }
+
+    private func runTest() {
+        testState = .testing
+        let modelID = appModel.settings.aiModelID
+        Task {
+            do {
+                try await AIService.shared.validateKey(modelID: modelID)
+                testState = .success
+            } catch {
+                testState = .failure(error.localizedDescription)
+            }
+        }
     }
 }

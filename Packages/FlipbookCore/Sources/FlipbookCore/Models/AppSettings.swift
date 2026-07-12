@@ -34,6 +34,20 @@ public final class AppSettings {
     public var accentColorID: String
     public var uiTransparencyEnabled: Bool
     public var sidebarVisibleByDefault: Bool
+    /// Chrome light/dark preference. Defaulted so SwiftData lightweight migration
+    /// adds it to existing stores without a manual migration plan.
+    public var appAppearanceRaw: String = AppAppearance.system.rawValue
+
+    // AI (bring-your-own-key). The API key itself is NOT stored here — it lives in the
+    // Keychain (`AIKeychain`). SwiftData only holds non-secret preferences.
+    public var aiEnabled: Bool = false
+    public var aiModelID: String = AIModelCatalog.defaultModelID
+    public var aiWebSearchEnabled: Bool = false
+
+    public var appAppearance: AppAppearance {
+        get { AppAppearance(rawValue: appAppearanceRaw) ?? .system }
+        set { appAppearanceRaw = newValue.rawValue }
+    }
 
     public init(
         id: Int = 0,
