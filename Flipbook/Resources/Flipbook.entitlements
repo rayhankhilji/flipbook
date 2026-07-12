@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	Direct Developer ID distribution, not the Mac App Store — App Sandbox is intentionally
+	not enabled. Hardened Runtime is configured via build settings and will be paired with
+	specific exceptions here only if a later milestone needs one (e.g. JIT). Keep this file
+	minimal until the M7 code-signing/notarization pass.
+	-->
+</dict>
+</plist>

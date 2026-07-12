@@ -1,0 +1,15 @@
+# macOS
+.DS_Store
+
+# Xcode
+DerivedData/
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+
+# SwiftPM
+.build/
+.swiftpm/
+
+# XcodeGen output is regenerated from project.yml; keep it tracked for now so the
+# project opens without requiring xcodegen, but ignore user-specific bits above.

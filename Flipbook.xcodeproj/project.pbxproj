@@ -1,0 +1,610 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		3369AE006A99686D333262AF /* PageAnnotationsOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B2CA0179A00AAF402F75112 /* PageAnnotationsOverlay.swift */; };
+		3C71140E2FB31B58FE3CF353 /* FlipbookDesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = 19742EA816A669F55F67576C /* FlipbookDesignSystem */; };
+		401FF91F07077AED1DA5AA18 /* LibraryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3BA9FDC73779A25D404E8A8 /* LibraryViewModel.swift */; };
+		4AEE6F546F9918700894DBD2 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51BF6997FAE09AA6B0D174EA /* AppModel.swift */; };
+		6631B1607EF132FD401F4E4C /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6BA954709B1B43DE352262 /* LibraryView.swift */; };
+		6EBE818A713A78849BFAFE5E /* SettingsScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE936D6C1250527BA2F8144B /* SettingsScene.swift */; };
+		76DD70B98963425AC5569F6F /* ImportDropDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD1328A3E041DBBB028C68A6 /* ImportDropDelegate.swift */; };
+		85C10009DBC74CFB8B4B5908 /* ReadingOptionsPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = A03D497E09771EBF4755D5E7 /* ReadingOptionsPopover.swift */; };
+		908B667C9A5259BB3AEEC80D /* ReaderSidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA3A33C155E21D9E03DB42C4 /* ReaderSidebarView.swift */; };
+		9435509D3AF40BAB10B5C399 /* ReaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F861513388159ACE64D7EC9E /* ReaderView.swift */; };
+		AB5C1CAABDB00D1DF0148379 /* FocusEscapeBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5EADADDA4FE7D4AFB6EA1CE /* FocusEscapeBar.swift */; };
+		B179FCABF21C8EF79DCEDF97 /* PageTurnContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9151CD329E627F57918DB5E /* PageTurnContainerView.swift */; };
+		B5472FD077716F00F1DD150D /* FlipbookApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08763C792850ED4B8381C346 /* FlipbookApp.swift */; };
+		BC77C2379621DEF6E336F514 /* BookCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41CF53DE4A41127222957076 /* BookCardView.swift */; };
+		C2B066E5094F698A21EB7493 /* FlipbookCore in Frameworks */ = {isa = PBXBuildFile; productRef = 975A02FDDB689725A2E26136 /* FlipbookCore */; };
+		C4D6981A34E5BCFFE0AEEF77 /* ContinuousScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2CC54B9EB7F8A6A3D3FB35B /* ContinuousScrollView.swift */; };
+		D16F3125198795AB10EBBCB1 /* ReflowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82D5D2763C434995C353781 /* ReflowView.swift */; };
+		D1CD21B99DBA309B8B6CF229 /* PageTurnNSView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 227281A570C38EFF64E500E1 /* PageTurnNSView.swift */; };
+		D95D653B93183A43764BE568 /* LaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 981A57C35DEB957722A865FF /* LaunchTests.swift */; };
+		F2566E93B1DC8CD64AF967B6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E29885AE1B759181941E8D42 /* Assets.xcassets */; };
+		F5B9DBBF8D1A8A48EB3908EB /* ReadingSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = B55B6E5DC6BA98F83CB82C77 /* ReadingSession.swift */; };
+		FE5ECB4AF3EFAE950A7F4B65 /* SceneCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E5BF89E8424DF9F29E697B4 /* SceneCommands.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		65FA5838E07848D2AC04BA43 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8FB88C4CDFF3797E2488D6AC /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9423C09580D09AF0A859CA74;
+			remoteInfo = Flipbook;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		08763C792850ED4B8381C346 /* FlipbookApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlipbookApp.swift; sourceTree = "<group>"; };
+		0B2CA0179A00AAF402F75112 /* PageAnnotationsOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageAnnotationsOverlay.swift; sourceTree = "<group>"; };
+		1818BB9B5EB0C3AAADCFC8E1 /* FlipbookTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FlipbookTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		227281A570C38EFF64E500E1 /* PageTurnNSView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageTurnNSView.swift; sourceTree = "<group>"; };
+		37E2AA941274D9E1ABAC346E /* FlipbookCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = FlipbookCore; path = Packages/FlipbookCore; sourceTree = SOURCE_ROOT; };
+		3E5BF89E8424DF9F29E697B4 /* SceneCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneCommands.swift; sourceTree = "<group>"; };
+		41CF53DE4A41127222957076 /* BookCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookCardView.swift; sourceTree = "<group>"; };
+		51BF6997FAE09AA6B0D174EA /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		63CD16AAF787EA4418491018 /* FlipbookDesignSystem */ = {isa = PBXFileReference; lastKnownFileType = folder; name = FlipbookDesignSystem; path = Packages/FlipbookDesignSystem; sourceTree = SOURCE_ROOT; };
+		6D6BA954709B1B43DE352262 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
+		981A57C35DEB957722A865FF /* LaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchTests.swift; sourceTree = "<group>"; };
+		A03D497E09771EBF4755D5E7 /* ReadingOptionsPopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingOptionsPopover.swift; sourceTree = "<group>"; };
+		ABC80DE401B078CDEE8373A3 /* Flipbook.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Flipbook.entitlements; sourceTree = "<group>"; };
+		AD4A6E567142E65B7E4DE5BE /* Flipbook.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Flipbook.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B2CC54B9EB7F8A6A3D3FB35B /* ContinuousScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContinuousScrollView.swift; sourceTree = "<group>"; };
+		B3BA9FDC73779A25D404E8A8 /* LibraryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViewModel.swift; sourceTree = "<group>"; };
+		B55B6E5DC6BA98F83CB82C77 /* ReadingSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingSession.swift; sourceTree = "<group>"; };
+		BD1328A3E041DBBB028C68A6 /* ImportDropDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportDropDelegate.swift; sourceTree = "<group>"; };
+		C82D5D2763C434995C353781 /* ReflowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflowView.swift; sourceTree = "<group>"; };
+		CE936D6C1250527BA2F8144B /* SettingsScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsScene.swift; sourceTree = "<group>"; };
+		DA3A33C155E21D9E03DB42C4 /* ReaderSidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderSidebarView.swift; sourceTree = "<group>"; };
+		E29885AE1B759181941E8D42 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		E5EADADDA4FE7D4AFB6EA1CE /* FocusEscapeBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusEscapeBar.swift; sourceTree = "<group>"; };
+		F861513388159ACE64D7EC9E /* ReaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderView.swift; sourceTree = "<group>"; };
+		F9151CD329E627F57918DB5E /* PageTurnContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageTurnContainerView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		76E7F298B43A435A112AF909 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C2B066E5094F698A21EB7493 /* FlipbookCore in Frameworks */,
+				3C71140E2FB31B58FE3CF353 /* FlipbookDesignSystem in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0B433412A39400A5B5062AA4 /* Library */ = {
+			isa = PBXGroup;
+			children = (
+				41CF53DE4A41127222957076 /* BookCardView.swift */,
+				BD1328A3E041DBBB028C68A6 /* ImportDropDelegate.swift */,
+				6D6BA954709B1B43DE352262 /* LibraryView.swift */,
+				B3BA9FDC73779A25D404E8A8 /* LibraryViewModel.swift */,
+			);
+			path = Library;
+			sourceTree = "<group>";
+		};
+		1DB2E1B4C4D19F368BE76E5F /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				37E2AA941274D9E1ABAC346E /* FlipbookCore */,
+				63CD16AAF787EA4418491018 /* FlipbookDesignSystem */,
+			);
+			path = Packages;
+			sourceTree = "<group>";
+		};
+		2908DA1AB81BFCB96BC26671 /* Reader */ = {
+			isa = PBXGroup;
+			children = (
+				B2CC54B9EB7F8A6A3D3FB35B /* ContinuousScrollView.swift */,
+				E5EADADDA4FE7D4AFB6EA1CE /* FocusEscapeBar.swift */,
+				F861513388159ACE64D7EC9E /* ReaderView.swift */,
+				A03D497E09771EBF4755D5E7 /* ReadingOptionsPopover.swift */,
+				B55B6E5DC6BA98F83CB82C77 /* ReadingSession.swift */,
+				C82D5D2763C434995C353781 /* ReflowView.swift */,
+				540A88ADBDCEF948F7408493 /* PageTurn */,
+				5B436CBBACA5C3D2EB56405F /* Sidebar */,
+			);
+			path = Reader;
+			sourceTree = "<group>";
+		};
+		540A88ADBDCEF948F7408493 /* PageTurn */ = {
+			isa = PBXGroup;
+			children = (
+				F9151CD329E627F57918DB5E /* PageTurnContainerView.swift */,
+				227281A570C38EFF64E500E1 /* PageTurnNSView.swift */,
+			);
+			path = PageTurn;
+			sourceTree = "<group>";
+		};
+		5B436CBBACA5C3D2EB56405F /* Sidebar */ = {
+			isa = PBXGroup;
+			children = (
+				DA3A33C155E21D9E03DB42C4 /* ReaderSidebarView.swift */,
+			);
+			path = Sidebar;
+			sourceTree = "<group>";
+		};
+		5CFF364FE1AE29698F8F9708 /* Flipbook */ = {
+			isa = PBXGroup;
+			children = (
+				5D54C1E15AD8C385B30096DA /* App */,
+				6857A7151ED981B68AADC4FF /* Features */,
+				C9749935506D10939E6C21FD /* Resources */,
+			);
+			path = Flipbook;
+			sourceTree = "<group>";
+		};
+		5D54C1E15AD8C385B30096DA /* App */ = {
+			isa = PBXGroup;
+			children = (
+				51BF6997FAE09AA6B0D174EA /* AppModel.swift */,
+				08763C792850ED4B8381C346 /* FlipbookApp.swift */,
+				3E5BF89E8424DF9F29E697B4 /* SceneCommands.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		65A1FB83766C89E23EEEB417 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AD4A6E567142E65B7E4DE5BE /* Flipbook.app */,
+				1818BB9B5EB0C3AAADCFC8E1 /* FlipbookTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		6857A7151ED981B68AADC4FF /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				EB55ECE5E7AB8A5BCE57AD20 /* Highlights */,
+				0B433412A39400A5B5062AA4 /* Library */,
+				2908DA1AB81BFCB96BC26671 /* Reader */,
+				ED58C4EC7F57251CE7EA3D45 /* Settings */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		B57A1068E0815006A189E20D = {
+			isa = PBXGroup;
+			children = (
+				5CFF364FE1AE29698F8F9708 /* Flipbook */,
+				F5D3071399CCC29800DD71B7 /* FlipbookTests */,
+				1DB2E1B4C4D19F368BE76E5F /* Packages */,
+				65A1FB83766C89E23EEEB417 /* Products */,
+			);
+			indentWidth = 4;
+			sourceTree = "<group>";
+			usesTabs = 0;
+		};
+		C9749935506D10939E6C21FD /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				E29885AE1B759181941E8D42 /* Assets.xcassets */,
+				ABC80DE401B078CDEE8373A3 /* Flipbook.entitlements */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		EB55ECE5E7AB8A5BCE57AD20 /* Highlights */ = {
+			isa = PBXGroup;
+			children = (
+				0B2CA0179A00AAF402F75112 /* PageAnnotationsOverlay.swift */,
+			);
+			path = Highlights;
+			sourceTree = "<group>";
+		};
+		ED58C4EC7F57251CE7EA3D45 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				CE936D6C1250527BA2F8144B /* SettingsScene.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		F5D3071399CCC29800DD71B7 /* FlipbookTests */ = {
+			isa = PBXGroup;
+			children = (
+				981A57C35DEB957722A865FF /* LaunchTests.swift */,
+			);
+			path = FlipbookTests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		9423C09580D09AF0A859CA74 /* Flipbook */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2E57D5D84FA473C8EFD3BBAB /* Build configuration list for PBXNativeTarget "Flipbook" */;
+			buildPhases = (
+				6BE77F1C7E302AD7FC8FFA22 /* Sources */,
+				974988A19E99A12E103F314F /* Resources */,
+				76E7F298B43A435A112AF909 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Flipbook;
+			packageProductDependencies = (
+				975A02FDDB689725A2E26136 /* FlipbookCore */,
+				19742EA816A669F55F67576C /* FlipbookDesignSystem */,
+			);
+			productName = Flipbook;
+			productReference = AD4A6E567142E65B7E4DE5BE /* Flipbook.app */;
+			productType = "com.apple.product-type.application";
+		};
+		A72FB50DB72E949497253A24 /* FlipbookTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2A06651578D06697A7AB0489 /* Build configuration list for PBXNativeTarget "FlipbookTests" */;
+			buildPhases = (
+				1ACCDFD8E3FA5521DF0F3F3A /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A9BB40E8850DFD407CBB6113 /* PBXTargetDependency */,
+			);
+			name = FlipbookTests;
+			packageProductDependencies = (
+			);
+			productName = FlipbookTests;
+			productReference = 1818BB9B5EB0C3AAADCFC8E1 /* FlipbookTests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		8FB88C4CDFF3797E2488D6AC /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					A72FB50DB72E949497253A24 = {
+						TestTargetID = 9423C09580D09AF0A859CA74;
+					};
+				};
+			};
+			buildConfigurationList = D318C38435E26312FE8148E7 /* Build configuration list for PBXProject "Flipbook" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = B57A1068E0815006A189E20D;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				9BA3286E71B74CC8F58AE4A7 /* XCLocalSwiftPackageReference "Packages/FlipbookCore" */,
+				A277B091AA0F7DAFD322F4FC /* XCLocalSwiftPackageReference "Packages/FlipbookDesignSystem" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 65A1FB83766C89E23EEEB417 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				9423C09580D09AF0A859CA74 /* Flipbook */,
+				A72FB50DB72E949497253A24 /* FlipbookTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		974988A19E99A12E103F314F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F2566E93B1DC8CD64AF967B6 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		1ACCDFD8E3FA5521DF0F3F3A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D95D653B93183A43764BE568 /* LaunchTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6BE77F1C7E302AD7FC8FFA22 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4AEE6F546F9918700894DBD2 /* AppModel.swift in Sources */,
+				BC77C2379621DEF6E336F514 /* BookCardView.swift in Sources */,
+				C4D6981A34E5BCFFE0AEEF77 /* ContinuousScrollView.swift in Sources */,
+				B5472FD077716F00F1DD150D /* FlipbookApp.swift in Sources */,
+				AB5C1CAABDB00D1DF0148379 /* FocusEscapeBar.swift in Sources */,
+				76DD70B98963425AC5569F6F /* ImportDropDelegate.swift in Sources */,
+				6631B1607EF132FD401F4E4C /* LibraryView.swift in Sources */,
+				401FF91F07077AED1DA5AA18 /* LibraryViewModel.swift in Sources */,
+				3369AE006A99686D333262AF /* PageAnnotationsOverlay.swift in Sources */,
+				B179FCABF21C8EF79DCEDF97 /* PageTurnContainerView.swift in Sources */,
+				D1CD21B99DBA309B8B6CF229 /* PageTurnNSView.swift in Sources */,
+				908B667C9A5259BB3AEEC80D /* ReaderSidebarView.swift in Sources */,
+				9435509D3AF40BAB10B5C399 /* ReaderView.swift in Sources */,
+				85C10009DBC74CFB8B4B5908 /* ReadingOptionsPopover.swift in Sources */,
+				F5B9DBBF8D1A8A48EB3908EB /* ReadingSession.swift in Sources */,
+				D16F3125198795AB10EBBCB1 /* ReflowView.swift in Sources */,
+				FE5ECB4AF3EFAE950A7F4B65 /* SceneCommands.swift in Sources */,
+				6EBE818A713A78849BFAFE5E /* SettingsScene.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A9BB40E8850DFD407CBB6113 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 9423C09580D09AF0A859CA74 /* Flipbook */;
+			targetProxy = 65FA5838E07848D2AC04BA43 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		35D6AF35BF79843C2EBA2665 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.2;
+			};
+			name = Release;
+		};
+		50E97AD8624BC383BE293C02 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.flipbook.app.tests;
+				SDKROOT = macosx;
+				TEST_TARGET_NAME = Flipbook;
+			};
+			name = Debug;
+		};
+		718898E505264F9D43CFB6E5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Flipbook/Resources/Flipbook.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Flipbook/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.flipbook.app;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		A3E3A2EF70859055D0924AFF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Flipbook/Resources/Flipbook.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Flipbook/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.flipbook.app;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		C06F7857541F606B648B5992 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.flipbook.app.tests;
+				SDKROOT = macosx;
+				TEST_TARGET_NAME = Flipbook;
+			};
+			name = Release;
+		};
+		FD653E5919BCFFD8C91137D4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.2;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2A06651578D06697A7AB0489 /* Build configuration list for PBXNativeTarget "FlipbookTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				50E97AD8624BC383BE293C02 /* Debug */,
+				C06F7857541F606B648B5992 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		2E57D5D84FA473C8EFD3BBAB /* Build configuration list for PBXNativeTarget "Flipbook" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A3E3A2EF70859055D0924AFF /* Debug */,
+				718898E505264F9D43CFB6E5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		D318C38435E26312FE8148E7 /* Build configuration list for PBXProject "Flipbook" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FD653E5919BCFFD8C91137D4 /* Debug */,
+				35D6AF35BF79843C2EBA2665 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		9BA3286E71B74CC8F58AE4A7 /* XCLocalSwiftPackageReference "Packages/FlipbookCore" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/FlipbookCore;
+		};
+		A277B091AA0F7DAFD322F4FC /* XCLocalSwiftPackageReference "Packages/FlipbookDesignSystem" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/FlipbookDesignSystem;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		19742EA816A669F55F67576C /* FlipbookDesignSystem */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FlipbookDesignSystem;
+		};
+		975A02FDDB689725A2E26136 /* FlipbookCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FlipbookCore;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 8FB88C4CDFF3797E2488D6AC /* Project object */;
+}
