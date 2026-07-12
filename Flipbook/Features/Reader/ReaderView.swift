@@ -1,3 +1,4 @@
+import AppKit
 import FlipbookCore
 import FlipbookDesignSystem
 import SwiftUI
@@ -58,6 +59,12 @@ struct ReaderView: View {
                 showSidebar = appModel.settings.sidebarVisibleByDefault
                 sidebarInitialized = true
             }
+        }
+        .onChange(of: focusMode) { _, isFocused in
+            // Focus mode is a true book-only immersive view: collapse the library
+            // split-view sidebar (LibraryView listens) and take the window fullscreen.
+            NotificationCenter.default.post(name: .flipbookFocusModeChanged, object: isFocused)
+            setWindowFullScreen(isFocused)
         }
         .onKeyPress(.leftArrow) {
             session.jump(toPage: session.currentPageIndex - pageStep)
@@ -279,4 +286,20 @@ struct ReaderView: View {
         }
         showingPageJump = false
     }
+
+    /// Enters/exits native macOS full screen, matching `on` (no-op if already there).
+    private func setWindowFullScreen(_ on: Bool) {
+        DispatchQueue.main.async {
+            guard let window = NSApp.keyWindow ?? NSApp.mainWindow ?? NSApp.windows.first else { return }
+            let isFull = window.styleMask.contains(.fullScreen)
+            if on != isFull {
+                window.toggleFullScreen(nil)
+            }
+        }
+    }
+}
+
+extension Notification.Name {
+    /// Posted by the reader when focus/immersive mode toggles; carries a `Bool`.
+    static let flipbookFocusModeChanged = Notification.Name("flipbookFocusModeChanged")
 }

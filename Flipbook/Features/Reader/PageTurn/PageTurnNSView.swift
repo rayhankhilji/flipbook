@@ -518,19 +518,9 @@ final class PageTurnNSView: NSView {
         }
     }
 
-    // Click-and-drag turns pages too — not everyone reaches for a two-finger swipe.
-    override func mouseDown(with event: NSEvent) {
-        guard session != nil else { return }
-        gestureBegan()
-    }
-
-    override func mouseDragged(with event: NSEvent) {
-        gestureMoved(deltaX: event.deltaX, deltaY: event.deltaY, timestamp: event.timestamp)
-    }
-
-    override func mouseUp(with event: NSEvent) {
-        gestureEnded()
-    }
+    // Mouse clicks and drags deliberately do NOT turn pages — a bare click on the page
+    // must stay free for text selection and highlighting. Pages turn via the trackpad
+    // two-finger swipe (above) or the arrow keys / Space (handled in ReaderView).
 
     private func gestureBegan() {
         guard case .idle = state else { return }

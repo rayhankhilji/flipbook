@@ -1,8 +1,6 @@
 import Foundation
 
-/// The Claude models Flipbook offers in Settings. Kept deliberately small — the reader
-/// only needs a capable default plus a faster/cheaper option for lighter tasks. IDs are
-/// the exact Anthropic model strings; do not append date suffixes.
+/// One selectable model within a provider. IDs are the exact wire model strings.
 public struct AIModelOption: Identifiable, Sendable, Hashable {
     public let id: String
     public let name: String
@@ -15,30 +13,19 @@ public struct AIModelOption: Identifiable, Sendable, Hashable {
     }
 }
 
+/// Thin helpers over `AIProvider`'s per-provider catalogs. Model lists live on
+/// `AIProvider` so each backend owns its own set; this just exposes lookups.
 public enum AIModelCatalog {
-    /// Anthropic's most capable widely available model — the right default for the
-    /// author-persona conversations, which reward depth over raw speed.
-    public static let defaultModelID = "claude-opus-4-8"
+    /// The overall default when nothing is configured yet — Anthropic's flagship.
+    public static let defaultModelID = AIProvider.anthropic.defaultModelID
 
-    public static let all: [AIModelOption] = [
-        AIModelOption(
-            id: "claude-opus-4-8",
-            name: "Claude Opus 4.8",
-            blurb: "Most capable — best for deep author conversations and analysis."
-        ),
-        AIModelOption(
-            id: "claude-sonnet-5",
-            name: "Claude Sonnet 5",
-            blurb: "Fast and strong — a lighter, lower-cost everyday choice."
-        ),
-        AIModelOption(
-            id: "claude-haiku-4-5",
-            name: "Claude Haiku 4.5",
-            blurb: "Fastest and cheapest — good for quick page summaries."
-        ),
-    ]
-
+    /// Finds a model's display metadata across every provider (falls back to the raw id).
     public static func option(for id: String) -> AIModelOption {
-        all.first(where: { $0.id == id }) ?? all[0]
+        for provider in AIProvider.allCases {
+            if let match = provider.models.first(where: { $0.id == id }) {
+                return match
+            }
+        }
+        return AIModelOption(id: id, name: id, blurb: "")
     }
 }

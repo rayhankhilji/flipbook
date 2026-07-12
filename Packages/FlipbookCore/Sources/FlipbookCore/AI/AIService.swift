@@ -1,6 +1,6 @@
 import Foundation
 
-/// A single turn in a conversation with Claude.
+/// A single turn in a conversation.
 public struct AIChatMessage: Identifiable, Sendable, Hashable, Codable {
     public enum Role: String, Sendable, Codable {
         case user
@@ -19,42 +19,40 @@ public struct AIChatMessage: Identifiable, Sendable, Hashable, Codable {
 }
 
 public enum AIServiceError: LocalizedError {
-    case missingKey
+    case missingKey(AIProvider)
     case http(status: Int, message: String)
     case decoding
     case network(String)
 
     public var errorDescription: String? {
         switch self {
-        case .missingKey:
-            return "No Anthropic API key set. Add one in Settings → AI."
+        case .missingKey(let provider):
+            return "No API key set for \(provider.displayName). Add one in Settings → AI."
         case .http(let status, let message):
-            return "Anthropic API error (\(status)): \(message)"
+            return "API error (\(status)): \(message)"
         case .decoding:
-            return "Couldn't read the response from Anthropic."
+            return "Couldn't read the response."
         case .network(let detail):
-            return "Network problem talking to Anthropic: \(detail)"
+            return "Network problem: \(detail)"
         }
     }
 }
 
-/// Talks to the Anthropic Messages API directly over HTTPS. There is no official
-/// Anthropic SDK for Swift, so this speaks the raw REST + SSE protocol
-/// (`x-api-key`, `anthropic-version: 2023-06-01`, `stream: true`). Bring-your-own-key:
-/// the key is read from the Keychain per call, never cached in memory longer than a request.
+/// Talks to AI providers directly over HTTPS. There is no official SDK for Swift, so this
+/// speaks the raw REST + SSE protocols: Anthropic's Messages API for Claude, and OpenAI
+/// Chat Completions for OpenAI, Gemini, and YUNWU (which share one code path). Keys are read
+/// from the Keychain per call, per provider.
 public actor AIService {
     public static let shared = AIService()
 
-    private let endpoint = URL(string: "https://api.anthropic.com/v1/messages")!
-    private let apiVersion = "2023-06-01"
+    private let anthropicVersion = "2023-06-01"
 
     public init() {}
 
     // MARK: - Streaming chat
 
-    /// Streams Claude's reply token-by-token. `system` sets the persona/instructions;
-    /// `history` is the full prior conversation (the API is stateless, so send it every time).
     public func streamReply(
+        provider: AIProvider,
         system: String?,
         history: [AIChatMessage],
         modelID: String,
@@ -64,48 +62,28 @@ public actor AIService {
         AsyncThrowingStream { continuation in
             let task = Task {
                 do {
-                    guard let key = AIKeychain.load() else {
-                        throw AIServiceError.missingKey
+                    guard let key = AIKeychain.load(for: provider) else {
+                        throw AIServiceError.missingKey(provider)
                     }
                     let request = try makeRequest(
-                        key: key,
-                        system: system,
-                        history: history,
-                        modelID: modelID,
-                        maxTokens: maxTokens,
-                        webSearch: webSearch,
-                        stream: true
+                        provider: provider, key: key, system: system, history: history,
+                        modelID: modelID, maxTokens: maxTokens, webSearch: webSearch, stream: true
                     )
 
                     let (bytes, response) = try await URLSession.shared.bytes(for: request)
                     if let http = response as? HTTPURLResponse, http.statusCode != 200 {
-                        // Error bodies aren't SSE — drain and surface the message.
                         var body = ""
                         for try await line in bytes.lines { body += line }
                         throw AIServiceError.http(status: http.statusCode, message: Self.extractError(from: body))
                     }
 
                     for try await line in bytes.lines {
-                        guard line.hasPrefix("data:") else { continue }
-                        let payload = line.dropFirst(5).trimmingCharacters(in: .whitespaces)
-                        if payload.isEmpty { continue }
-                        guard let data = payload.data(using: .utf8),
-                              let event = try? JSONDecoder().decode(StreamEvent.self, from: data)
-                        else { continue }
-
-                        switch event.type {
-                        case "content_block_delta":
-                            if let text = event.delta?.text, !text.isEmpty {
-                                continuation.yield(text)
-                            }
-                        case "message_stop":
+                        guard let text = Self.parseStreamLine(line, wire: provider.wire) else { continue }
+                        if text == Self.doneSentinel {
                             continuation.finish()
                             return
-                        case "error":
-                            throw AIServiceError.http(status: 200, message: event.error?.message ?? "streaming error")
-                        default:
-                            break
                         }
+                        if !text.isEmpty { continuation.yield(text) }
                     }
                     continuation.finish()
                 } catch is CancellationError {
@@ -120,57 +98,69 @@ public actor AIService {
         }
     }
 
-    // MARK: - One-shot completion (summaries, notes)
+    // MARK: - One-shot completion (summaries, notes, key validation)
 
-    /// Non-streaming single reply — for short, self-contained tasks like summarizing a page.
     public func complete(
+        provider: AIProvider,
         system: String?,
         prompt: String,
         modelID: String,
         maxTokens: Int = 1024
     ) async throws -> String {
-        guard let key = AIKeychain.load() else { throw AIServiceError.missingKey }
+        guard let key = AIKeychain.load(for: provider) else { throw AIServiceError.missingKey(provider) }
         let request = try makeRequest(
-            key: key,
-            system: system,
+            provider: provider, key: key, system: system,
             history: [AIChatMessage(role: .user, text: prompt)],
-            modelID: modelID,
-            maxTokens: maxTokens,
-            webSearch: false,
-            stream: false
+            modelID: modelID, maxTokens: maxTokens, webSearch: false, stream: false
         )
         let (data, response) = try await URLSession.shared.data(for: request)
         if let http = response as? HTTPURLResponse, http.statusCode != 200 {
             let body = String(data: data, encoding: .utf8) ?? ""
             throw AIServiceError.http(status: http.statusCode, message: Self.extractError(from: body))
         }
-        guard let message = try? JSONDecoder().decode(MessageResponse.self, from: data) else {
+        guard let text = Self.parseCompletion(data, wire: provider.wire) else {
             throw AIServiceError.decoding
         }
-        return message.content.compactMap { $0.text }.joined()
+        return text
     }
 
-    /// Cheap connectivity/auth check used by the Settings "Test connection" button.
-    public func validateKey(modelID: String) async throws {
-        _ = try await complete(system: nil, prompt: "Reply with the single word: ok", modelID: modelID, maxTokens: 16)
+    /// Cheap connectivity/auth check for the Settings "Test connection" button.
+    public func validateKey(provider: AIProvider, modelID: String) async throws {
+        _ = try await complete(
+            provider: provider, system: nil,
+            prompt: "Reply with the single word: ok", modelID: modelID, maxTokens: 16
+        )
     }
 
     // MARK: - Request building
 
     private func makeRequest(
-        key: String,
-        system: String?,
-        history: [AIChatMessage],
-        modelID: String,
-        maxTokens: Int,
-        webSearch: Bool,
-        stream: Bool
+        provider: AIProvider, key: String, system: String?, history: [AIChatMessage],
+        modelID: String, maxTokens: Int, webSearch: Bool, stream: Bool
     ) throws -> URLRequest {
-        var request = URLRequest(url: endpoint)
+        switch provider.wire {
+        case .anthropic:
+            return try makeAnthropicRequest(
+                baseURL: provider.baseURL, key: key, system: system, history: history,
+                modelID: modelID, maxTokens: maxTokens, webSearch: webSearch, stream: stream
+            )
+        case .openAICompatible:
+            return try makeOpenAIRequest(
+                baseURL: provider.baseURL, key: key, system: system, history: history,
+                modelID: modelID, maxTokens: maxTokens, stream: stream
+            )
+        }
+    }
+
+    private func makeAnthropicRequest(
+        baseURL: URL, key: String, system: String?, history: [AIChatMessage],
+        modelID: String, maxTokens: Int, webSearch: Bool, stream: Bool
+    ) throws -> URLRequest {
+        var request = URLRequest(url: baseURL.appendingPathComponent("v1/messages"))
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue(key, forHTTPHeaderField: "x-api-key")
-        request.setValue(apiVersion, forHTTPHeaderField: "anthropic-version")
+        request.setValue(anthropicVersion, forHTTPHeaderField: "anthropic-version")
 
         var body: [String: Any] = [
             "model": modelID,
@@ -178,14 +168,81 @@ public actor AIService {
             "stream": stream,
             "messages": history.map { ["role": $0.role.rawValue, "content": $0.text] },
         ]
-        if let system, !system.isEmpty {
-            body["system"] = system
-        }
-        if webSearch {
-            body["tools"] = [["type": "web_search_20260209", "name": "web_search"]]
-        }
+        if let system, !system.isEmpty { body["system"] = system }
+        if webSearch { body["tools"] = [["type": "web_search_20260209", "name": "web_search"]] }
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
         return request
+    }
+
+    private func makeOpenAIRequest(
+        baseURL: URL, key: String, system: String?, history: [AIChatMessage],
+        modelID: String, maxTokens: Int, stream: Bool
+    ) throws -> URLRequest {
+        var request = URLRequest(url: baseURL.appendingPathComponent("chat/completions"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(key)", forHTTPHeaderField: "Authorization")
+
+        // OpenAI carries the system prompt as a leading `system` message.
+        var messages: [[String: Any]] = []
+        if let system, !system.isEmpty {
+            messages.append(["role": "system", "content": system])
+        }
+        messages += history.map { ["role": $0.role.rawValue, "content": $0.text] }
+
+        let body: [String: Any] = [
+            "model": modelID,
+            "max_tokens": maxTokens,
+            "stream": stream,
+            "messages": messages,
+        ]
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        return request
+    }
+
+    // MARK: - Response parsing
+
+    private static let doneSentinel = "\u{0}__DONE__"
+
+    /// Returns the text delta from one SSE line, `doneSentinel` when the stream ends, or nil.
+    private static func parseStreamLine(_ line: String, wire: AIProvider.Wire) -> String? {
+        guard line.hasPrefix("data:") else { return nil }
+        let payload = line.dropFirst(5).trimmingCharacters(in: .whitespaces)
+        if payload.isEmpty { return nil }
+        if payload == "[DONE]" { return doneSentinel }
+        guard let data = payload.data(using: .utf8),
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+        else { return nil }
+
+        switch wire {
+        case .anthropic:
+            if (json["type"] as? String) == "message_stop" { return doneSentinel }
+            if (json["type"] as? String) == "content_block_delta",
+               let delta = json["delta"] as? [String: Any],
+               let text = delta["text"] as? String {
+                return text
+            }
+            return nil
+        case .openAICompatible:
+            guard let choices = json["choices"] as? [[String: Any]],
+                  let delta = choices.first?["delta"] as? [String: Any]
+            else { return nil }
+            return delta["content"] as? String
+        }
+    }
+
+    private static func parseCompletion(_ data: Data, wire: AIProvider.Wire) -> String? {
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return nil }
+        switch wire {
+        case .anthropic:
+            guard let content = json["content"] as? [[String: Any]] else { return nil }
+            return content.compactMap { $0["text"] as? String }.joined()
+        case .openAICompatible:
+            guard let choices = json["choices"] as? [[String: Any]],
+                  let message = choices.first?["message"] as? [String: Any]
+            else { return nil }
+            return message["content"] as? String
+        }
     }
 
     private static func extractError(from body: String) -> String {
@@ -195,28 +252,5 @@ public actor AIService {
               let message = error["message"] as? String
         else { return body.isEmpty ? "Unknown error" : body }
         return message
-    }
-
-    // MARK: - Wire types
-
-    private struct StreamEvent: Decodable {
-        let type: String
-        let delta: Delta?
-        let error: APIError?
-
-        struct Delta: Decodable {
-            let text: String?
-        }
-        struct APIError: Decodable {
-            let message: String?
-        }
-    }
-
-    private struct MessageResponse: Decodable {
-        let content: [Block]
-        struct Block: Decodable {
-            let type: String
-            let text: String?
-        }
     }
 }

@@ -72,12 +72,13 @@ struct LibraryView: View {
     @State private var activeSession: ReadingSession?
     @State private var filter: LibraryFilter = .all
     @State private var searchText = ""
+    @State private var columnVisibility: NavigationSplitViewVisibility = .automatic
     @AppStorage("librarySortOrder") private var sortOrder: LibrarySort = .recentlyAdded
 
     private let columns = [GridItem(.adaptive(minimum: 160, maximum: 200), spacing: SpacingTokens.lg)]
 
     var body: some View {
-        NavigationSplitView {
+        NavigationSplitView(columnVisibility: $columnVisibility) {
             List(selection: $filter) {
                 Section("Library") {
                     ForEach(LibraryFilter.allCases) { shelf in
@@ -111,6 +112,13 @@ struct LibraryView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .flipbookImportRequested)) { _ in
             presentOpenPanel()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .flipbookFocusModeChanged)) { note in
+            // Immersive reading collapses the shelves sidebar entirely; restore on exit.
+            let focused = (note.object as? Bool) ?? false
+            withAnimation(AnimationTokens.standard) {
+                columnVisibility = focused ? .detailOnly : .automatic
+            }
         }
         .onOpenURL { url in
             openExternalPDF(at: url)

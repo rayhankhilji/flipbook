@@ -1,37 +1,39 @@
 import Foundation
 import Security
 
-/// Stores the user's Anthropic API key in the login Keychain — never in SwiftData,
-/// UserDefaults, or plain files. The key is a secret the user brings (BYOK); it stays
-/// on-device and is only ever sent to Anthropic's API over TLS.
+/// Stores each provider's API key in the login Keychain — never in SwiftData, UserDefaults,
+/// or plain files. Keys are secrets the user brings (BYOK); they stay on-device and are only
+/// ever sent to that provider's API over TLS. One key per provider, so the user can keep
+/// several configured and switch between them.
 public enum AIKeychain {
-    private static let service = "com.flipbook.app.anthropic"
-    private static let account = "api-key"
+    private static let service = "com.flipbook.app.ai"
 
-    public static func save(_ key: String) {
+    private static func account(for provider: AIProvider) -> String {
+        "api-key-\(provider.rawValue)"
+    }
+
+    public static func save(_ key: String, for provider: AIProvider) {
         let trimmed = key.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty, let data = trimmed.data(using: .utf8) else {
-            delete()
+            delete(for: provider)
             return
         }
-
-        // Upsert: delete any existing item, then add fresh so attributes stay clean.
-        delete()
+        delete(for: provider)
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
-            kSecAttrAccount as String: account,
+            kSecAttrAccount as String: account(for: provider),
             kSecValueData as String: data,
             kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
         ]
         SecItemAdd(query as CFDictionary, nil)
     }
 
-    public static func load() -> String? {
+    public static func load(for provider: AIProvider) -> String? {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
-            kSecAttrAccount as String: account,
+            kSecAttrAccount as String: account(for: provider),
             kSecReturnData as String: true,
             kSecMatchLimit as String: kSecMatchLimitOne,
         ]
@@ -43,16 +45,16 @@ public enum AIKeychain {
         return key
     }
 
-    public static func delete() {
+    public static func delete(for provider: AIProvider) {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
-            kSecAttrAccount as String: account,
+            kSecAttrAccount as String: account(for: provider),
         ]
         SecItemDelete(query as CFDictionary)
     }
 
-    public static var hasKey: Bool {
-        load() != nil
+    public static func hasKey(for provider: AIProvider) -> Bool {
+        load(for: provider) != nil
     }
 }

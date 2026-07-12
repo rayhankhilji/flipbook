@@ -38,11 +38,17 @@ public final class AppSettings {
     /// adds it to existing stores without a manual migration plan.
     public var appAppearanceRaw: String = AppAppearance.system.rawValue
 
-    // AI (bring-your-own-key). The API key itself is NOT stored here — it lives in the
+    // AI (bring-your-own-key). API keys are NOT stored here — they live per-provider in the
     // Keychain (`AIKeychain`). SwiftData only holds non-secret preferences.
     public var aiEnabled: Bool = false
-    public var aiModelID: String = AIModelCatalog.defaultModelID
+    public var aiProviderRaw: String = AIProvider.anthropic.rawValue
+    public var aiModelID: String = AIProvider.anthropic.defaultModelID
     public var aiWebSearchEnabled: Bool = false
+
+    public var aiProvider: AIProvider {
+        get { AIProvider(rawValue: aiProviderRaw) ?? .anthropic }
+        set { aiProviderRaw = newValue.rawValue }
+    }
 
     public var appAppearance: AppAppearance {
         get { AppAppearance(rawValue: appAppearanceRaw) ?? .system }

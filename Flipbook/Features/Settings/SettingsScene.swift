@@ -247,30 +247,46 @@ private struct AISettingsTab: View {
     @Environment(AppModel.self) private var appModel
 
     @State private var apiKeyField = ""
-    @State private var hasStoredKey = AIKeychain.hasKey
+    @State private var hasStoredKey = false
     @State private var testState: TestState = .idle
 
     private enum TestState: Equatable {
         case idle, testing, success, failure(String)
     }
 
+    private var provider: AIProvider { appModel.settings.aiProvider }
+
     var body: some View {
         @Bindable var settings = appModel.settings
 
         Form {
-            Section("Anthropic API Key") {
-                Text("Flipbook's AI features use your own Anthropic API key. It's stored only in your Mac's Keychain and sent directly to Anthropic over a secure connection — never to us.")
+            Section("Provider") {
+                Picker("Provider", selection: Binding(
+                    get: { settings.aiProvider },
+                    set: { switchProvider(to: $0) }
+                )) {
+                    ForEach(AIProvider.allCases) { p in
+                        Text(p.displayName).tag(p)
+                    }
+                }
+                Text(provider.note)
+                    .font(TypographyTokens.caption)
+                    .foregroundStyle(ColorTokens.chromeSecondaryText)
+            }
+
+            Section("\(provider.displayName) API Key") {
+                Text("Flipbook uses your own key. It's stored only in your Mac's Keychain and sent directly to \(provider.displayName) over a secure connection — never to us. Each provider has its own key.")
                     .font(TypographyTokens.caption)
                     .foregroundStyle(ColorTokens.chromeSecondaryText)
 
-                SecureField(hasStoredKey ? "•••• stored in Keychain" : "sk-ant-…", text: $apiKeyField)
+                SecureField(hasStoredKey ? "•••• stored in Keychain" : provider.keyPlaceholder, text: $apiKeyField)
                     .textFieldStyle(.roundedBorder)
 
                 HStack {
                     Button("Save Key") {
-                        AIKeychain.save(apiKeyField)
+                        AIKeychain.save(apiKeyField, for: provider)
                         apiKeyField = ""
-                        hasStoredKey = AIKeychain.hasKey
+                        refreshKeyState()
                         testState = .idle
                     }
                     .buttonStyle(.flipbook(prominent: true))
@@ -278,10 +294,8 @@ private struct AISettingsTab: View {
 
                     if hasStoredKey {
                         Button("Remove", role: .destructive) {
-                            AIKeychain.delete()
-                            hasStoredKey = false
-                            settings.aiEnabled = false
-                            appModel.save()
+                            AIKeychain.delete(for: provider)
+                            refreshKeyState()
                             testState = .idle
                         }
                     }
@@ -296,9 +310,39 @@ private struct AISettingsTab: View {
                 }
                 .disabled(!hasStoredKey || testState == .testing)
 
-                Link("Get an API key at console.anthropic.com",
-                     destination: URL(string: "https://console.anthropic.com/settings/keys")!)
+                Link("Get a \(provider.displayName) key", destination: provider.consoleURL)
                     .font(TypographyTokens.caption)
+            }
+
+            Section("Model") {
+                // A text field (so YUNWU's arbitrary model IDs work) with a preset menu
+                // scoped to the current provider.
+                HStack {
+                    TextField("Model ID", text: Binding(
+                        get: { settings.aiModelID },
+                        set: { settings.aiModelID = $0; appModel.save() }
+                    ))
+                    .textFieldStyle(.roundedBorder)
+
+                    Menu("Presets") {
+                        ForEach(provider.models) { option in
+                            Button(option.name) {
+                                settings.aiModelID = option.id
+                                appModel.save()
+                            }
+                        }
+                    }
+                    .fixedSize()
+                }
+                if let blurb = provider.models.first(where: { $0.id == settings.aiModelID })?.blurb {
+                    Text(blurb)
+                        .font(TypographyTokens.caption)
+                        .foregroundStyle(ColorTokens.chromeSecondaryText)
+                } else if provider.allowsCustomModel {
+                    Text("Enter any model ID this relay supports.")
+                        .font(TypographyTokens.caption)
+                        .foregroundStyle(ColorTokens.chromeSecondaryText)
+                }
             }
 
             Section("Features") {
@@ -306,24 +350,13 @@ private struct AISettingsTab: View {
                     .disabled(!hasStoredKey)
                     .onChange(of: settings.aiEnabled) { _, _ in appModel.save() }
 
-                Picker("Model", selection: Binding(
-                    get: { settings.aiModelID },
-                    set: { settings.aiModelID = $0; appModel.save() }
-                )) {
-                    ForEach(AIModelCatalog.all) { option in
-                        Text(option.name).tag(option.id)
-                    }
-                }
-                Text(AIModelCatalog.option(for: settings.aiModelID).blurb)
-                    .font(TypographyTokens.caption)
-                    .foregroundStyle(ColorTokens.chromeSecondaryText)
-
                 Toggle("Allow web search in conversations", isOn: $settings.aiWebSearchEnabled)
                     .disabled(!hasStoredKey)
                     .onChange(of: settings.aiWebSearchEnabled) { _, _ in appModel.save() }
             }
         }
         .formStyle(.grouped)
+        .onAppear(perform: refreshKeyState)
     }
 
     @ViewBuilder
@@ -345,12 +378,30 @@ private struct AISettingsTab: View {
         }
     }
 
+    private func switchProvider(to newProvider: AIProvider) {
+        appModel.settings.aiProvider = newProvider
+        // Default to the new provider's flagship model unless the user already typed one
+        // that belongs to it.
+        if !newProvider.models.contains(where: { $0.id == appModel.settings.aiModelID }) {
+            appModel.settings.aiModelID = newProvider.defaultModelID
+        }
+        appModel.save()
+        apiKeyField = ""
+        testState = .idle
+        refreshKeyState()
+    }
+
+    private func refreshKeyState() {
+        hasStoredKey = AIKeychain.hasKey(for: provider)
+    }
+
     private func runTest() {
         testState = .testing
+        let p = provider
         let modelID = appModel.settings.aiModelID
         Task {
             do {
-                try await AIService.shared.validateKey(modelID: modelID)
+                try await AIService.shared.validateKey(provider: p, modelID: modelID)
                 testState = .success
             } catch {
                 testState = .failure(error.localizedDescription)
