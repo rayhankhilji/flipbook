@@ -84,8 +84,7 @@ struct ContinuousScrollView: View {
                 session: session,
                 pageIndex: index,
                 displayedSize: CGSize(width: width, height: height),
-                theme: theme,
-                allowCreation: true
+                theme: theme
             )
         )
         .clipShape(RoundedRectangle(cornerRadius: 2, style: .continuous))

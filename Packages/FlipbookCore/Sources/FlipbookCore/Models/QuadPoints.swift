@@ -18,3 +18,20 @@ public enum QuadPoints {
         }
     }
 }
+
+/// Serializes a freehand pen stroke's centerline (points in PDF page space, bottom-left
+/// origin) to the `Data` stored on `Highlight.strokePointsData`. JSON of [x, y] pairs.
+public enum StrokePath {
+    public static func encode(_ points: [CGPoint]) -> Data {
+        let arrays = points.map { [$0.x, $0.y] }
+        return (try? JSONEncoder().encode(arrays)) ?? Data()
+    }
+
+    public static func decode(_ data: Data?) -> [CGPoint] {
+        guard let data, let arrays = try? JSONDecoder().decode([[CGFloat]].self, from: data) else { return [] }
+        return arrays.compactMap { values in
+            guard values.count == 2 else { return nil }
+            return CGPoint(x: values[0], y: values[1])
+        }
+    }
+}

@@ -9,6 +9,7 @@ import SwiftUI
 /// stay global through the View menu (`ReaderMenuCommands`).
 struct ReaderView: View {
     @Environment(AppModel.self) private var appModel
+    @Environment(\.modelContext) private var modelContext
     let session: ReadingSession
     let onClose: () -> Void
 
@@ -19,6 +20,7 @@ struct ReaderView: View {
     @State private var showSidebar = false
     @State private var sidebarInitialized = false
     @State private var focusMode = false
+    @State private var aiController: AIChatController?
     @FocusState private var readerFocused: Bool
 
     private var theme: ThemeDefinition { appModel.currentTheme }
@@ -26,10 +28,11 @@ struct ReaderView: View {
     var body: some View {
         HStack(spacing: 0) {
             if showSidebar && !focusMode {
-                ReaderSidebarView(session: session, theme: theme)
+                ReaderSidebarView(session: session, theme: theme, aiController: aiController)
                     .transition(.move(edge: .leading))
                 Divider()
             }
+
             readingSurface
                 .scaleEffect(focusMode ? 1.015 : 1.0)
         }
@@ -42,6 +45,17 @@ struct ReaderView: View {
                 .transition(.opacity)
             }
         }
+        .overlay(alignment: .bottom) {
+            if session.highlighterActive {
+                HighlighterBar(session: session) {
+                    withAnimation(AnimationTokens.quick) {
+                        session.highlighterActive = false
+                    }
+                }
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+        .animation(AnimationTokens.standard, value: session.highlighterActive)
         .animation(AnimationTokens.standard, value: theme.id)
         .animation(AnimationTokens.standard, value: focusMode)
         .navigationTitle(session.book.title)
@@ -55,11 +69,13 @@ struct ReaderView: View {
         .simultaneousGesture(TapGesture().onEnded { readerFocused = true })
         .onAppear {
             readerFocused = true
+            ensureAIController()
             if !sidebarInitialized {
                 showSidebar = appModel.settings.sidebarVisibleByDefault
                 sidebarInitialized = true
             }
         }
+        .onChange(of: session.book.id) { _, _ in ensureAIController() }
         .onChange(of: focusMode) { _, isFocused in
             // Focus mode is a true book-only immersive view: collapse the library
             // split-view sidebar (LibraryView listens) and take the window fullscreen.
@@ -128,6 +144,18 @@ struct ReaderView: View {
         ToolbarItemGroup(placement: .primaryAction) {
             Button {
                 withAnimation(AnimationTokens.quick) {
+                    session.highlighterActive.toggle()
+                }
+            } label: {
+                Label("Highlighter", systemImage: "highlighter")
+                    .foregroundStyle(session.highlighterActive ? Color.accentColor : Color.primary)
+            }
+            .help(session.highlighterActive
+                ? "Turn off highlighter"
+                : "Highlighter — drag to mark, tap a mark to erase")
+
+            Button {
+                withAnimation(AnimationTokens.quick) {
                     session.toggleBookmark()
                 }
             } label: {
@@ -194,27 +222,46 @@ struct ReaderView: View {
                 PageTurnContainerView(
                     session: session,
                     theme: theme,
-                    swipeEnabled: appModel.settings.gestureSwipeToTurnPage
+                    // A trackpad swipe would flip the page out from under a marker stroke,
+                    // so pause it while the highlighter is on (arrow keys still turn).
+                    swipeEnabled: appModel.settings.gestureSwipeToTurnPage && !session.highlighterActive
                 )
                 .overlay(
-                    // Bookmark ribbon + committed highlights over the resting right
-                    // page. Creation happens in scroll mode, where drags don't fight
-                    // page flips.
-                    PageAnnotationsOverlay(
-                        session: session,
-                        pageIndex: spreadLayout.rightPageIndex ?? session.currentPageIndex,
-                        displayedSize: spreadLayout.rightRect.size,
-                        theme: theme,
-                        allowCreation: false
-                    )
-                    .frame(width: spreadLayout.rightRect.width, height: spreadLayout.rightRect.height)
-                    .position(x: spreadLayout.rightRect.midX, y: spreadLayout.rightRect.midY)
+                    // Bookmark ribbon + committed highlights over each resting page, and —
+                    // when the highlighter is on — the marker gesture. Mouse drags don't
+                    // turn pages (that's trackpad/arrows), so marking is safe here too.
+                    pageTurnAnnotations(spreadLayout)
                 )
             }
         case .scroll:
             ContinuousScrollView(session: session, theme: theme)
                 .simultaneousGesture(pinchToZoom, isEnabled: appModel.settings.gesturePinchToZoom)
         }
+    }
+
+    /// Annotation overlays for a page-turn spread — one per visible page so marks can be
+    /// made on the left page as well as the right.
+    @ViewBuilder
+    private func pageTurnAnnotations(_ layout: BookSpreadLayout) -> some View {
+        ZStack {
+            if !layout.isSingle, let left = layout.leftPageIndex {
+                annotationOverlay(pageIndex: left, rect: layout.leftRect)
+            }
+            if let right = layout.rightPageIndex ?? layout.leftPageIndex {
+                annotationOverlay(pageIndex: right, rect: layout.rightRect)
+            }
+        }
+    }
+
+    private func annotationOverlay(pageIndex: Int, rect: CGRect) -> some View {
+        PageAnnotationsOverlay(
+            session: session,
+            pageIndex: pageIndex,
+            displayedSize: rect.size,
+            theme: theme
+        )
+        .frame(width: rect.width, height: rect.height)
+        .position(x: rect.midX, y: rect.midY)
     }
 
     private var pinchToZoom: some Gesture {
@@ -278,6 +325,14 @@ struct ReaderView: View {
                 .buttonStyle(.flipbook(prominent: true))
         }
         .padding(SpacingTokens.md)
+    }
+
+    /// Keeps a single `AIChatController` alive for the life of the window, recreating it
+    /// only when the open book changes — shared by the sidebar tab and the centered page.
+    private func ensureAIController() {
+        if aiController?.book.id != session.book.id {
+            aiController = AIChatController(session: session, modelContext: modelContext, settings: appModel.settings)
+        }
     }
 
     private func commitPageJump() {

@@ -2,33 +2,37 @@ import FlipbookCore
 import FlipbookDesignSystem
 import SwiftUI
 
-/// Sits over a displayed page: renders committed highlights and the bookmark ribbon,
-/// and (where enabled) hosts the highlight-creation gesture — press-and-hold, then drag.
-/// Text-based pages get live text selection via the PDF's text layer; scanned pages fall
-/// back to drawing a region rectangle. Both render identically once committed.
+/// Sits over a displayed page: renders committed highlights and the bookmark ribbon, and —
+/// while the highlighter tool is active — hosts a free-roam pen. Dragging lays down a
+/// translucent stroke that follows your hand (not a bounding box), like a real highlighter;
+/// a tap on an existing mark erases it. The words under a mark are captured for its sidebar
+/// snippet. Works identically in scroll and page-turn modes.
 struct PageAnnotationsOverlay: View {
     let session: ReadingSession
     let pageIndex: Int
     let displayedSize: CGSize
     let theme: ThemeDefinition
-    let allowCreation: Bool
 
-    @State private var liveViewRects: [CGRect] = []
-    @State private var pendingPageRects: [CGRect]?
-    @State private var pendingText: String?
-    @State private var pendingKind: HighlightKind = .region
-    @State private var pendingStyle = "highlight"
-    @State private var pickerAnchor: CGPoint?
+    /// The in-progress stroke, in view space (top-left origin).
+    @State private var livePoints: [CGPoint] = []
 
     private var pageSize: CGSize { session.document.pageSize(at: pageIndex) }
     private var scale: CGFloat { pageSize.width > 0 ? displayedSize.width / pageSize.width : 1 }
+    private var active: Bool { session.highlighterActive }
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
-            committedHighlights
+            ForEach(session.highlights(forPage: pageIndex)) { highlight in
+                committedMark(highlight)
+            }
 
-            ForEach(Array(liveViewRects.enumerated()), id: \.offset) { _, rect in
-                selectionRect(rect, colorID: "honey")
+            if livePoints.count >= 2 {
+                penStroke(
+                    viewPoints: livePoints,
+                    width: viewPenWidth(session.highlighterStyle),
+                    colorID: session.highlighterColorTag,
+                    style: session.highlighterStyle
+                )
             }
 
             if session.bookmark(forPage: pageIndex) != nil {
@@ -36,34 +40,54 @@ struct PageAnnotationsOverlay: View {
                     .padding(.trailing, SpacingTokens.lg)
                     .transition(.move(edge: .top).combined(with: .opacity))
             }
-
-            if pendingPageRects != nil, let anchor = pickerAnchor {
-                colorPicker
-                    .position(clampedPickerPosition(anchor))
-            }
         }
         .frame(width: displayedSize.width, height: displayedSize.height, alignment: .topTrailing)
         .contentShape(Rectangle())
-        .gesture(highlightGesture, isEnabled: allowCreation)
+        .gesture(markerGesture, isEnabled: active)
         .animation(AnimationTokens.quick, value: session.bookmark(forPage: pageIndex) != nil)
     }
 
-    // MARK: - Committed highlights
+    // MARK: - Committed marks
 
-    private var committedHighlights: some View {
-        ForEach(session.highlights(forPage: pageIndex)) { highlight in
+    @ViewBuilder
+    private func committedMark(_ highlight: Highlight) -> some View {
+        let strokePoints = StrokePath.decode(highlight.strokePointsData)
+        if !strokePoints.isEmpty {
+            penStroke(
+                viewPoints: strokePoints.map(viewPoint(fromPagePoint:)),
+                width: CGFloat(highlight.strokeWidth) * scale,
+                colorID: highlight.colorTag,
+                style: highlight.styleTag
+            )
+        } else {
+            // Legacy rect-based highlights (text selections / regions from older builds).
             ForEach(Array(QuadPoints.decode(highlight.quadPointsData).enumerated()), id: \.offset) { _, pageRect in
-                selectionRect(
-                    viewRect(fromPageRect: pageRect),
-                    colorID: highlight.colorTag,
-                    style: highlight.styleTag
-                )
+                legacyRect(viewRect(fromPageRect: pageRect), colorID: highlight.colorTag, style: highlight.styleTag)
             }
         }
     }
 
+    /// A pen stroke: the path traced through `viewPoints`, stroked with round caps so it
+    /// reads as one continuous marker line. Highlight style is thick and translucent
+    /// (multiplies into the page); underline style is a thinner, near-opaque line.
+    private func penStroke(viewPoints: [CGPoint], width: CGFloat, colorID: String, style: String) -> some View {
+        let path = Path { p in
+            guard let first = viewPoints.first else { return }
+            p.move(to: first)
+            for point in viewPoints.dropFirst() { p.addLine(to: point) }
+        }
+        let underline = style == "underline"
+        let color = underline
+            ? HighlightPalette.color(for: colorID).opacity(0.9)
+            : HighlightPalette.overlayColor(for: colorID, isDarkTheme: theme.isDark)
+        return path
+            .stroke(color, style: StrokeStyle(lineWidth: max(width, 2), lineCap: .round, lineJoin: .round))
+            .blendMode(underline ? .normal : (theme.isDark ? .screen : .multiply))
+            .allowsHitTesting(false)
+    }
+
     @ViewBuilder
-    private func selectionRect(_ rect: CGRect, colorID: String, style: String = "highlight") -> some View {
+    private func legacyRect(_ rect: CGRect, colorID: String, style: String) -> some View {
         if style == "underline" {
             let barHeight = max(2.5, rect.height * 0.09)
             RoundedRectangle(cornerRadius: barHeight / 2, style: .continuous)
@@ -81,151 +105,120 @@ struct PageAnnotationsOverlay: View {
         }
     }
 
-    // MARK: - Creation gesture
+    // MARK: - Pen gesture
 
-    private var highlightGesture: some Gesture {
-        LongPressGesture(minimumDuration: 0.25)
-            .sequenced(before: DragGesture(minimumDistance: 0, coordinateSpace: .local))
+    /// A drag traces a stroke; a near-stationary press (a tap) erases the mark under it.
+    private var markerGesture: some Gesture {
+        DragGesture(minimumDistance: 0, coordinateSpace: .local)
             .onChanged { value in
-                guard case .second(true, let drag?) = value else { return }
-                updateLiveSelection(from: drag.startLocation, to: drag.location)
+                appendPoint(value.location, start: value.startLocation)
             }
             .onEnded { value in
-                guard case .second(true, let drag?) = value else { return }
-                commitLiveSelection(from: drag.startLocation, to: drag.location)
-            }
-    }
-
-    private func updateLiveSelection(from start: CGPoint, to current: CGPoint) {
-        if session.document.pageHasText(at: pageIndex) {
-            let selection = session.document.textSelection(
-                pageIndex: pageIndex,
-                from: pagePoint(fromViewPoint: start),
-                to: pagePoint(fromViewPoint: current)
-            )
-            liveViewRects = (selection?.rects ?? []).map(viewRect(fromPageRect:))
-        } else {
-            liveViewRects = [CGRect(
-                x: min(start.x, current.x),
-                y: min(start.y, current.y),
-                width: abs(current.x - start.x),
-                height: abs(current.y - start.y)
-            )]
-        }
-    }
-
-    private func commitLiveSelection(from start: CGPoint, to end: CGPoint) {
-        defer { liveViewRects = [] }
-
-        if session.document.pageHasText(at: pageIndex) {
-            guard let selection = session.document.textSelection(
-                pageIndex: pageIndex,
-                from: pagePoint(fromViewPoint: start),
-                to: pagePoint(fromViewPoint: end)
-            ), !selection.rects.isEmpty else { return }
-            pendingPageRects = selection.rects
-            pendingText = selection.text
-            pendingKind = .textSelection
-        } else {
-            let viewRect = CGRect(
-                x: min(start.x, end.x),
-                y: min(start.y, end.y),
-                width: abs(end.x - start.x),
-                height: abs(end.y - start.y)
-            )
-            guard viewRect.width > 8, viewRect.height > 8 else { return }
-            pendingPageRects = [pageRect(fromViewRect: viewRect)]
-            pendingText = nil
-            pendingKind = .region
-        }
-        pickerAnchor = end
-    }
-
-    // MARK: - Color picker
-
-    private var colorPicker: some View {
-        HStack(spacing: SpacingTokens.sm) {
-            // Style toggle: filled highlight vs. underline.
-            ForEach(["highlight", "underline"], id: \.self) { style in
-                Button {
-                    pendingStyle = style
-                } label: {
-                    Image(systemName: style == "highlight" ? "highlighter" : "underline")
-                        .font(.caption.weight(.semibold))
-                        .frame(width: 24, height: 24)
-                        .background(
-                            Circle().fill(pendingStyle == style ? Color.primary.opacity(0.12) : .clear)
-                        )
+                let points = livePoints
+                livePoints = []
+                if polylineLength(points) < 6 {
+                    eraseMark(at: value.location)
+                } else {
+                    commitStroke(points)
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel(Text(style == "highlight" ? "Highlight style" : "Underline style"))
-                .accessibilityAddTraits(pendingStyle == style ? [.isButton, .isSelected] : .isButton)
             }
-
-            Divider().frame(height: 16)
-
-            ForEach(HighlightPalette.all) { entry in
-                Button {
-                    commitHighlight(colorTag: entry.id)
-                } label: {
-                    Circle()
-                        .fill(entry.color)
-                        .frame(width: 22, height: 22)
-                        .overlay(Circle().strokeBorder(.white.opacity(0.6), lineWidth: 1))
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(Text("\(pendingStyle == "underline" ? "Underline" : "Highlight") in \(entry.name)"))
-            }
-
-            Divider().frame(height: 16)
-
-            Button {
-                dismissPicker()
-            } label: {
-                Image(systemName: "xmark")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(ColorTokens.chromeSecondaryText)
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(Text("Cancel highlight"))
-        }
-        .padding(.horizontal, SpacingTokens.md)
-        .padding(.vertical, SpacingTokens.sm)
-        .glassPanel(cornerRadius: 999)
-        .shadow(color: .black.opacity(0.25), radius: 12, y: 4)
-        .transition(.opacity.combined(with: .scale(scale: 0.9)))
     }
 
-    private func commitHighlight(colorTag: String) {
-        if let rects = pendingPageRects {
-            withAnimation(AnimationTokens.quick) {
-                session.addHighlight(
-                    pageIndex: pageIndex,
-                    kind: pendingKind,
-                    rects: rects,
-                    selectedText: pendingText,
-                    colorTag: colorTag,
-                    styleTag: pendingStyle
-                )
+    /// Samples the drag path, dropping points closer than ~1.5pt so the stored stroke stays
+    /// compact without visibly faceting.
+    private func appendPoint(_ point: CGPoint, start: CGPoint) {
+        if livePoints.isEmpty { livePoints.append(start) }
+        guard let last = livePoints.last else { return }
+        if hypot(point.x - last.x, point.y - last.y) >= 1.5 {
+            livePoints.append(point)
+        }
+    }
+
+    private func commitStroke(_ viewPoints: [CGPoint]) {
+        guard viewPoints.count >= 2 else { return }
+        let style = session.highlighterStyle
+        let pagePoints = viewPoints.map(pagePoint(fromViewPoint:))
+        let pageWidth = viewPenWidth(style) / max(scale, 0.01)
+        let box = boundingBox(pagePoints)
+            .insetBy(dx: -pageWidth / 2, dy: -pageWidth / 2)
+            .intersection(CGRect(origin: .zero, size: pageSize))
+        let snippet = session.document.text(inRect: box, pageIndex: pageIndex)
+        withAnimation(AnimationTokens.quick) {
+            session.addPenHighlight(
+                pageIndex: pageIndex,
+                strokePoints: pagePoints,
+                strokeWidth: pageWidth,
+                boundingBox: box,
+                selectedText: snippet,
+                colorTag: session.highlighterColorTag,
+                styleTag: style
+            )
+        }
+    }
+
+    private func eraseMark(at point: CGPoint) {
+        let hit = session.highlights(forPage: pageIndex).first { highlight in
+            let stroke = StrokePath.decode(highlight.strokePointsData)
+            if !stroke.isEmpty {
+                let viewStroke = stroke.map(viewPoint(fromPagePoint:))
+                let tolerance = max(CGFloat(highlight.strokeWidth) * scale, 10) / 2 + 6
+                return distanceToPolyline(point, viewStroke) <= tolerance
+            }
+            return QuadPoints.decode(highlight.quadPointsData).contains {
+                viewRect(fromPageRect: $0).insetBy(dx: -6, dy: -6).contains(point)
             }
         }
-        dismissPicker()
+        guard let hit else { return }
+        withAnimation(AnimationTokens.quick) {
+            session.removeHighlight(hit)
+        }
     }
 
-    private func dismissPicker() {
-        pendingPageRects = nil
-        pendingText = nil
-        pickerAnchor = nil
+    /// Fixed view-space pen thickness so a stroke feels the same regardless of zoom; it's
+    /// converted to page space at commit and scales with the page thereafter.
+    private func viewPenWidth(_ style: String) -> CGFloat {
+        style == "underline" ? 5 : 18
     }
 
-    private func clampedPickerPosition(_ anchor: CGPoint) -> CGPoint {
-        CGPoint(
-            x: min(max(anchor.x, 120), displayedSize.width - 120),
-            y: min(max(anchor.y - 36, 24), displayedSize.height - 24)
-        )
+    // MARK: - Geometry helpers
+
+    private func polylineLength(_ points: [CGPoint]) -> CGFloat {
+        guard points.count >= 2 else { return 0 }
+        return zip(points, points.dropFirst()).reduce(0) { $0 + hypot($1.1.x - $1.0.x, $1.1.y - $1.0.y) }
+    }
+
+    private func boundingBox(_ points: [CGPoint]) -> CGRect {
+        guard let first = points.first else { return .zero }
+        var minX = first.x, minY = first.y, maxX = first.x, maxY = first.y
+        for point in points.dropFirst() {
+            minX = min(minX, point.x); minY = min(minY, point.y)
+            maxX = max(maxX, point.x); maxY = max(maxY, point.y)
+        }
+        return CGRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
+    }
+
+    private func distanceToPolyline(_ point: CGPoint, _ line: [CGPoint]) -> CGFloat {
+        guard line.count >= 2 else {
+            return line.first.map { hypot(point.x - $0.x, point.y - $0.y) } ?? .greatestFiniteMagnitude
+        }
+        return zip(line, line.dropFirst()).reduce(CGFloat.greatestFiniteMagnitude) { best, segment in
+            min(best, distanceToSegment(point, segment.0, segment.1))
+        }
+    }
+
+    private func distanceToSegment(_ p: CGPoint, _ a: CGPoint, _ b: CGPoint) -> CGFloat {
+        let dx = b.x - a.x, dy = b.y - a.y
+        let lengthSquared = dx * dx + dy * dy
+        guard lengthSquared > 0 else { return hypot(p.x - a.x, p.y - a.y) }
+        let t = max(0, min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / lengthSquared))
+        return hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy))
     }
 
     // MARK: - Coordinate mapping (view: top-left origin — PDF page: bottom-left origin)
+
+    private func viewPoint(fromPagePoint point: CGPoint) -> CGPoint {
+        CGPoint(x: point.x * scale, y: displayedSize.height - point.y * scale)
+    }
 
     private func pagePoint(fromViewPoint point: CGPoint) -> CGPoint {
         CGPoint(x: point.x / scale, y: (displayedSize.height - point.y) / scale)
@@ -237,15 +230,6 @@ struct PageAnnotationsOverlay: View {
             y: displayedSize.height - rect.maxY * scale,
             width: rect.width * scale,
             height: rect.height * scale
-        )
-    }
-
-    private func pageRect(fromViewRect rect: CGRect) -> CGRect {
-        CGRect(
-            x: rect.minX / scale,
-            y: (displayedSize.height - rect.maxY) / scale,
-            width: rect.width / scale,
-            height: rect.height / scale
         )
     }
 }

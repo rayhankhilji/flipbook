@@ -103,10 +103,15 @@ public enum AIProvider: String, Sendable, Codable, CaseIterable, Identifiable {
                 AIModelOption(id: "o4-mini", name: "o4-mini", blurb: "Reasoning model, cost-efficient."),
             ]
         case .gemini:
+            // "-latest" aliases track Google's current recommended Flash/Flash-Lite so a
+            // pinned version being retired can't strand us (the old catalog pinned
+            // gemini-2.5-flash, which Google deprecated for new keys). Default is Flash-Lite
+            // — the quickest and cheapest model on the free tier.
             return [
-                AIModelOption(id: "gemini-2.5-pro", name: "Gemini 2.5 Pro", blurb: "Google's most capable Gemini."),
-                AIModelOption(id: "gemini-2.5-flash", name: "Gemini 2.5 Flash", blurb: "Fast and cost-efficient."),
-                AIModelOption(id: "gemini-2.0-flash", name: "Gemini 2.0 Flash", blurb: "Lightweight, very fast."),
+                AIModelOption(id: "gemini-flash-lite-latest", name: "Gemini Flash-Lite (Latest)", blurb: "Quickest and cheapest — free tier. Recommended."),
+                AIModelOption(id: "gemini-flash-latest", name: "Gemini Flash (Latest)", blurb: "More capable, still fast and free-tier friendly."),
+                AIModelOption(id: "gemini-2.5-flash-lite", name: "Gemini 2.5 Flash-Lite", blurb: "Pinned stable Flash-Lite version."),
+                AIModelOption(id: "gemini-2.5-flash", name: "Gemini 2.5 Flash", blurb: "Pinned stable Flash version."),
             ]
         case .yunwu:
             return [

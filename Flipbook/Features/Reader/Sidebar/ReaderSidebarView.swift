@@ -2,13 +2,17 @@ import FlipbookCore
 import FlipbookDesignSystem
 import SwiftUI
 
-/// The reader's collapsible side panel: Contents / Thumbnails / Bookmarks / Highlights.
+/// The reader's collapsible side panel: Contents / Thumbnails / Bookmarks / Highlights / Ask AI.
 struct ReaderSidebarView: View {
     let session: ReadingSession
     let theme: ThemeDefinition
+    /// Owned by `ReaderView` so it survives sidebar tab switches without losing conversation state.
+    let aiController: AIChatController?
+
+    @Environment(AppModel.self) private var appModel
 
     enum Tab: String, CaseIterable, Identifiable {
-        case contents, thumbnails, bookmarks, highlights
+        case contents, thumbnails, bookmarks, highlights, ai
         var id: String { rawValue }
 
         var symbol: String {
@@ -17,6 +21,7 @@ struct ReaderSidebarView: View {
             case .thumbnails: "square.grid.2x2"
             case .bookmarks: "bookmark"
             case .highlights: "highlighter"
+            case .ai: "sparkles"
             }
         }
 
@@ -26,6 +31,7 @@ struct ReaderSidebarView: View {
             case .thumbnails: "Thumbnails"
             case .bookmarks: "Bookmarks"
             case .highlights: "Highlights"
+            case .ai: "Ask AI"
             }
         }
     }
@@ -57,9 +63,20 @@ struct ReaderSidebarView: View {
                 BookmarksTabView(session: session)
             case .highlights:
                 HighlightsTabView(session: session)
+            case .ai:
+                if !appModel.settings.aiEnabled {
+                    AIDisabledStateView()
+                } else if let aiController {
+                    AIChatView(controller: aiController)
+                } else {
+                    Color.clear
+                }
             }
         }
-        .frame(width: 264)
+        // The Ask AI tab gets a wider berth (chat + a reference rail, Mobbin-style) — the
+        // book stays visible in the remaining space, unlike a full takeover.
+        .frame(width: tab == .ai ? 460 : 264)
+        .animation(AnimationTokens.standard, value: tab)
         .background(.regularMaterial)
     }
 }
@@ -273,7 +290,7 @@ private struct HighlightsTabView: View {
         if sortedHighlights.isEmpty {
             SidebarEmptyState(
                 symbol: "highlighter",
-                message: "No highlights yet. Press and hold on the page, then drag across text. Choose highlight or underline, then add a note here."
+                message: "No highlights yet. Tap the highlighter in the toolbar, then draw across the page like a pen. Tap a mark to erase. Add notes to your marks here."
             )
         } else {
             ScrollView {
@@ -343,7 +360,7 @@ private struct HighlightNoteCard: View {
                         .multilineTextAlignment(.leading)
 
                     HStack(spacing: SpacingTokens.xs) {
-                        Image(systemName: highlight.styleTag == "underline" ? "underline" : "highlighter")
+                        Image(systemName: highlight.styleTag == "underline" ? "pencil.tip" : "highlighter")
                             .font(.system(size: 9))
                         Text("Page \(highlight.pageIndex + 1)")
                         if highlight.note?.isEmpty == false && !isExpanded {

@@ -147,6 +147,15 @@ final class ReadingSession {
         try? modelContext.save()
     }
 
+    // MARK: - Highlighter tool
+
+    /// A marker you toggle on from the toolbar. While active, dragging on a page paints a
+    /// free-form region highlight in the current color/style and tapping an existing mark
+    /// erases it. Ephemeral — resets each time the book is opened.
+    var highlighterActive = false
+    var highlighterColorTag = "honey"
+    var highlighterStyle = "highlight" // "highlight" | "underline"
+
     // MARK: - Highlights
 
     func highlights(forPage index: Int) -> [Highlight] {
@@ -166,6 +175,32 @@ final class ReadingSession {
             pageIndex: pageIndex,
             kind: kind,
             quadPointsData: QuadPoints.encode(rects),
+            selectedText: selectedText,
+            colorTag: colorTag,
+            styleTag: styleTag
+        )
+        modelContext.insert(highlight)
+        try? modelContext.save()
+    }
+
+    /// Persists a freehand pen mark: the stroke centerline (page space) plus its width,
+    /// with the stroke's bounding box in `quadPointsData` for hit-testing and snippets.
+    func addPenHighlight(
+        pageIndex: Int,
+        strokePoints: [CGPoint],
+        strokeWidth: CGFloat,
+        boundingBox: CGRect,
+        selectedText: String?,
+        colorTag: String,
+        styleTag: String
+    ) {
+        let highlight = Highlight(
+            book: book,
+            pageIndex: pageIndex,
+            kind: .region,
+            quadPointsData: QuadPoints.encode([boundingBox]),
+            strokePointsData: StrokePath.encode(strokePoints),
+            strokeWidth: Double(strokeWidth),
             selectedText: selectedText,
             colorTag: colorTag,
             styleTag: styleTag

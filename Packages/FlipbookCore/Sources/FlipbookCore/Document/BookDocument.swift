@@ -66,6 +66,14 @@ public final class BookDocument: @unchecked Sendable {
         return !text.isEmpty
     }
 
+    /// Extracted text for one page, trimmed. Used to ground the AI assistant in what's
+    /// on screen without handing PDFKit types up to the UI/AI layers.
+    public func pageText(at index: Int) -> String? {
+        guard let page = page(at: index) else { return nil }
+        let text = page.string?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return text.isEmpty ? nil : text
+    }
+
     /// Builds a text selection between two points in PDF page space (bottom-left origin),
     /// returning per-line bounds ready for highlight quads plus the selected text.
     public func textSelection(
@@ -85,6 +93,15 @@ public final class BookDocument: @unchecked Sendable {
         guard !lineRects.isEmpty else { return nil }
 
         return (lineRects, selection.string ?? "")
+    }
+
+    /// Text contained within a rectangle in PDF page space (bottom-left origin). Used to
+    /// capture the words under a free-form marker highlight for its note snippet, without
+    /// snapping the visible highlight to the text runs.
+    public func text(inRect rect: CGRect, pageIndex: Int) -> String? {
+        guard let page = page(at: pageIndex), let selection = page.selection(for: rect) else { return nil }
+        let text = selection.string?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return text.isEmpty ? nil : text
     }
 
     /// Renders a low-res cover thumbnail from the first page, used for the Library grid.
