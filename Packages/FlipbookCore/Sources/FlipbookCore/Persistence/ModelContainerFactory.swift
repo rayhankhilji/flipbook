@@ -13,6 +13,9 @@ public enum ModelContainerFactory {
             Folder.self,
             StickyNote.self,
             ReadingDay.self,
+            BookDigest.self,
+            AuthorPersona.self,
+            AuthorConversation.self,
         ])
     }
 

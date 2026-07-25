@@ -17,6 +17,7 @@
 		4D362D477B79A60C4F161A75 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AD605E7D24F18A37586F435 /* DashboardView.swift */; };
 		6631B1607EF132FD401F4E4C /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6BA954709B1B43DE352262 /* LibraryView.swift */; };
 		6EBE818A713A78849BFAFE5E /* SettingsScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE936D6C1250527BA2F8144B /* SettingsScene.swift */; };
+		700A614A6845AA3602BEFD80 /* AuthorChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FB827712211A36AB72EC415 /* AuthorChatView.swift */; };
 		76DD70B98963425AC5569F6F /* ImportDropDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD1328A3E041DBBB028C68A6 /* ImportDropDelegate.swift */; };
 		85C10009DBC74CFB8B4B5908 /* ReadingOptionsPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = A03D497E09771EBF4755D5E7 /* ReadingOptionsPopover.swift */; };
 		908B667C9A5259BB3AEEC80D /* ReaderSidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA3A33C155E21D9E03DB42C4 /* ReaderSidebarView.swift */; };
@@ -34,9 +35,11 @@
 		D16F3125198795AB10EBBCB1 /* ReflowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82D5D2763C434995C353781 /* ReflowView.swift */; };
 		D1CD21B99DBA309B8B6CF229 /* PageTurnNSView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 227281A570C38EFF64E500E1 /* PageTurnNSView.swift */; };
 		D95D653B93183A43764BE568 /* LaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 981A57C35DEB957722A865FF /* LaunchTests.swift */; };
+		DD5C320D59F59C7AE9097E07 /* AuthorChatModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DDD1B6D3FF2661A0B5946A0 /* AuthorChatModel.swift */; };
 		E54B230D6100E90F7D27F2C8 /* BookEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F04332B68AC82E1E5C0FB8C /* BookEditSheet.swift */; };
 		F2566E93B1DC8CD64AF967B6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E29885AE1B759181941E8D42 /* Assets.xcassets */; };
 		F5B9DBBF8D1A8A48EB3908EB /* ReadingSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = B55B6E5DC6BA98F83CB82C77 /* ReadingSession.swift */; };
+		FE377796D5CE0BD31951D46C /* AuthorsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F985825393529D6568B2939 /* AuthorsView.swift */; };
 		FE5ECB4AF3EFAE950A7F4B65 /* SceneCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E5BF89E8424DF9F29E697B4 /* SceneCommands.swift */; };
 /* End PBXBuildFile section */
 
@@ -54,8 +57,11 @@
 		025E31697BA5B21396B50EBA /* WindowConfigurator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowConfigurator.swift; sourceTree = "<group>"; };
 		08763C792850ED4B8381C346 /* FlipbookApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlipbookApp.swift; sourceTree = "<group>"; };
 		0B2CA0179A00AAF402F75112 /* PageAnnotationsOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageAnnotationsOverlay.swift; sourceTree = "<group>"; };
+		0DDD1B6D3FF2661A0B5946A0 /* AuthorChatModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthorChatModel.swift; sourceTree = "<group>"; };
 		1818BB9B5EB0C3AAADCFC8E1 /* FlipbookTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FlipbookTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		1F985825393529D6568B2939 /* AuthorsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthorsView.swift; sourceTree = "<group>"; };
 		227281A570C38EFF64E500E1 /* PageTurnNSView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageTurnNSView.swift; sourceTree = "<group>"; };
+		2FB827712211A36AB72EC415 /* AuthorChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthorChatView.swift; sourceTree = "<group>"; };
 		37E2AA941274D9E1ABAC346E /* FlipbookCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = FlipbookCore; path = Packages/FlipbookCore; sourceTree = SOURCE_ROOT; };
 		3E5BF89E8424DF9F29E697B4 /* SceneCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneCommands.swift; sourceTree = "<group>"; };
 		41CF53DE4A41127222957076 /* BookCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookCardView.swift; sourceTree = "<group>"; };
@@ -208,6 +214,9 @@
 		8B2BDED8442AEED2270308CF /* AI */ = {
 			isa = PBXGroup;
 			children = (
+				0DDD1B6D3FF2661A0B5946A0 /* AuthorChatModel.swift */,
+				2FB827712211A36AB72EC415 /* AuthorChatView.swift */,
+				1F985825393529D6568B2939 /* AuthorsView.swift */,
 				7A8A1773F8FF65E8FC5F31B1 /* BookChatModel.swift */,
 				6D5FC73812FAFD9D2DE8B407 /* ChatPanelView.swift */,
 				A85F2695B1B7D1C087353865 /* MarkdownText.swift */,
@@ -367,6 +376,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				4AEE6F546F9918700894DBD2 /* AppModel.swift in Sources */,
+				DD5C320D59F59C7AE9097E07 /* AuthorChatModel.swift in Sources */,
+				700A614A6845AA3602BEFD80 /* AuthorChatView.swift in Sources */,
+				FE377796D5CE0BD31951D46C /* AuthorsView.swift in Sources */,
 				BC77C2379621DEF6E336F514 /* BookCardView.swift in Sources */,
 				B318274D374AE9E7867DA15D /* BookChatModel.swift in Sources */,
 				E54B230D6100E90F7D27F2C8 /* BookEditSheet.swift in Sources */,

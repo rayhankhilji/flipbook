@@ -71,6 +71,18 @@ public enum AIProvider: String, Sendable, Codable, CaseIterable, Identifiable {
 
     public var defaultModelID: String { models.first?.id ?? "" }
 
+    /// The cheapest capable model for bulk work. Book distillation reads an entire book —
+    /// hundreds of thousands of tokens — so the map phase runs here rather than on the
+    /// flagship, which is what makes distilling a full book cost cents instead of dollars.
+    public var bulkModelID: String {
+        switch self {
+        case .anthropic: "claude-haiku-4-5-20251001"
+        case .openai: "gpt-5-mini"
+        case .gemini: "gemini-2.5-flash"
+        case .yunwu: "gemini-2.5-flash"
+        }
+    }
+
     /// Presets shown in the model menu. The model field stays free-text everywhere, so a
     /// newly released model can be used the day it ships without an app update.
     public var models: [AIModelOption] {

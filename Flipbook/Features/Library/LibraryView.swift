@@ -67,6 +67,7 @@ enum LibrarySort: String, CaseIterable, Identifiable {
 /// Top-level sidebar destination: the dashboard, a computed shelf, or a user folder.
 enum SidebarItem: Hashable {
     case home
+    case authors
     case shelf(LibraryFilter)
     case folder(UUID)
 }
@@ -205,6 +206,7 @@ struct LibraryView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 2) {
                     sidebarRow(.home, title: "Home", symbol: "house")
+                    sidebarRow(.authors, title: "Authors", symbol: "person.and.background.dotted")
 
                     sectionHeader("Library")
                     ForEach(LibraryFilter.allCases) { shelf in
@@ -367,6 +369,9 @@ struct LibraryView: View {
             DashboardView(books: books, openBook: open)
                 .navigationTitle("Home")
                 .toolbar { libraryToolbar }
+        } else if selection == .authors {
+            AuthorsView(books: books)
+                .navigationTitle("Authors")
         } else {
             content
                 .navigationTitle(currentTitle)
@@ -377,6 +382,7 @@ struct LibraryView: View {
     private var currentTitle: String {
         switch selection {
         case .home, .none: return "Home"
+        case .authors: return "Authors"
         case .shelf(let f): return f.title
         case .folder(let id): return folders.first(where: { $0.id == id })?.name ?? "Folder"
         }
