@@ -18,6 +18,29 @@ public enum InterfaceDensity: String, Sendable, Codable, CaseIterable {
     case comfortable
 }
 
+/// Settings → AI personalization tone preset, folded into the assistant's system prompt.
+public enum AIResponseStyle: String, Sendable, Codable, CaseIterable {
+    case concise
+    case balanced
+    case thorough
+
+    public var label: String {
+        switch self {
+        case .concise: "Concise"
+        case .balanced: "Balanced"
+        case .thorough: "Thorough"
+        }
+    }
+
+    public var promptFragment: String {
+        switch self {
+        case .concise: "Keep answers brief — a few sentences or a short list. Expand only if asked."
+        case .balanced: "Give answers with enough explanation to be useful, without padding."
+        case .thorough: "Give thorough, well-structured answers that explore nuance and cite the text."
+        }
+    }
+}
+
 /// App-wide chrome appearance, independent of the per-book reading theme.
 /// `.system` follows macOS; the other two pin the window's color scheme.
 public enum AppAppearance: String, Sendable, Codable, CaseIterable {

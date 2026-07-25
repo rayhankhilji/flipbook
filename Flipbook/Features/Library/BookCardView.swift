@@ -7,6 +7,7 @@ import SwiftUI
 struct BookCardView: View {
     let book: Book
     let isSelected: Bool
+    var onEdit: (() -> Void)? = nil
 
     @State private var isHovered = false
 
@@ -21,6 +22,8 @@ struct BookCardView: View {
                 bookBody
                 statusBadge
             }
+            .overlay(alignment: .topLeading) { cornerBadges }
+            .overlay(alignment: .topTrailing) { editButton }
             .scaleEffect(isHovered || isSelected ? 1.03 : 1.0)
             .offset(y: isHovered ? -4 : 0)
             .animation(AnimationTokens.quick, value: isHovered)
@@ -29,7 +32,7 @@ struct BookCardView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(book.title)
                     .font(TypographyTokens.bookTitle)
-                    .foregroundStyle(ColorTokens.chromeText)
+                    .foregroundStyle(ColorTokens.ink)
                     .lineLimit(2)
 
                 HStack(spacing: SpacingTokens.xs) {
@@ -46,7 +49,7 @@ struct BookCardView: View {
                     }
                 }
                 .font(TypographyTokens.caption)
-                .foregroundStyle(ColorTokens.chromeSecondaryText)
+                .foregroundStyle(ColorTokens.inkSecondary)
             }
         }
         .onHover { hovering in
@@ -102,6 +105,47 @@ struct BookCardView: View {
         .allowsHitTesting(false)
     }
 
+    /// A quiet pencil that appears on hover — the discoverable way to rename a book and
+    /// edit its author, mirroring the "Edit Title & Author…" context-menu item.
+    @ViewBuilder
+    private var editButton: some View {
+        if isHovered, let onEdit {
+            Button(action: onEdit) {
+                Image(systemName: "pencil")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(BrandTokens.espresso)
+                    .padding(6)
+                    .background(BrandTokens.tileCream, in: Circle())
+            }
+            .buttonStyle(.plain)
+            .help("Edit Title & Author")
+            .padding(SpacingTokens.xs)
+            .transition(.opacity)
+        }
+    }
+
+    /// Pin and favourite indicators, tucked into the cover's top-leading corner.
+    @ViewBuilder
+    private var cornerBadges: some View {
+        if book.isPinned || book.isFavorite {
+            HStack(spacing: 3) {
+                if book.isPinned {
+                    Image(systemName: "pin.fill")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(BrandTokens.espresso)
+                }
+                if book.isFavorite {
+                    Image(systemName: "heart.fill")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(Color(red: 0.78, green: 0.35, blue: 0.28))
+                }
+            }
+            .padding(4)
+            .background(BrandTokens.tileCream, in: Capsule())
+            .padding(SpacingTokens.xs)
+        }
+    }
+
     @ViewBuilder
     private var statusBadge: some View {
         if book.isMissing {
@@ -113,7 +157,7 @@ struct BookCardView: View {
             ProgressRing(progress: progressFraction)
                 .frame(width: 22, height: 22)
                 .padding(SpacingTokens.xs)
-                .background(.regularMaterial, in: Circle())
+                .background(BrandTokens.tileCream, in: Circle())
                 .padding(SpacingTokens.sm)
         }
     }

@@ -46,6 +46,57 @@ final class LibraryViewModel {
         try? modelContext.save()
     }
 
+    // MARK: - Book metadata
+
+    func rename(_ book: Book, title: String, author: String) {
+        book.title = title
+        book.authorHint = author.isEmpty ? nil : author
+        try? modelContext.save()
+    }
+
+    func toggleFavorite(_ book: Book) {
+        book.isFavorite.toggle()
+        try? modelContext.save()
+    }
+
+    func togglePin(_ book: Book) {
+        book.isPinned.toggle()
+        try? modelContext.save()
+    }
+
+    // MARK: - Folders
+
+    @discardableResult
+    func createFolder(name: String) -> Folder {
+        let existing = (try? modelContext.fetch(FetchDescriptor<Folder>())) ?? []
+        let nextIndex = (existing.map(\.sortIndex).max() ?? -1) + 1
+        let folder = Folder(name: name, sortIndex: nextIndex)
+        modelContext.insert(folder)
+        try? modelContext.save()
+        return folder
+    }
+
+    func renameFolder(_ folder: Folder, to name: String) {
+        folder.name = name
+        try? modelContext.save()
+    }
+
+    func deleteFolder(_ folder: Folder) {
+        modelContext.delete(folder)
+        try? modelContext.save()
+    }
+
+    func setMembership(_ book: Book, in folder: Folder, member: Bool) {
+        if member {
+            if !folder.books.contains(where: { $0.id == book.id }) {
+                folder.books.append(book)
+            }
+        } else {
+            folder.books.removeAll { $0.id == book.id }
+        }
+        try? modelContext.save()
+    }
+
     /// Re-checks file resolution for a book (e.g. after the user opens it), flagging it
     /// missing rather than silently failing so the Library can surface a relink affordance.
     func verifyFileResolution(for book: Book) {

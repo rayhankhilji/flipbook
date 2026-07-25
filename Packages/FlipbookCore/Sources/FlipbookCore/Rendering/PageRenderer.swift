@@ -41,6 +41,10 @@ public actor PageRenderer {
         if let cached = cache.image(for: key) {
             return cached
         }
+        // A cancelled caller must not pay for (or make everyone else queue behind) a render
+        // it will never use — stale prefetches piling up here is what starves the request
+        // for the page actually on screen.
+        guard !Task.isCancelled else { return nil }
 
         let bucketZoom = PageCacheKey.zoom(forBucket: key.zoomBucket)
         guard var rendered = renderPage(at: pageIndex, zoom: bucketZoom, screenScale: screenScale) else {

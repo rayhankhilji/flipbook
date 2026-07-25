@@ -26,6 +26,11 @@ public final class Book {
     /// Drives a "Locate File…" affordance rather than silently dropping the library entry.
     public var isMissing: Bool
 
+    /// User-marked favourite (heart badge + Favourites shelf). Defaulted for lightweight migration.
+    public var isFavorite: Bool = false
+    /// Pinned books sort to the front of every shelf. Defaulted for lightweight migration.
+    public var isPinned: Bool = false
+
     @Relationship(deleteRule: .cascade, inverse: \ReadingProgress.book)
     public var progress: ReadingProgress?
 
@@ -34,6 +39,12 @@ public final class Book {
 
     @Relationship(deleteRule: .cascade, inverse: \Highlight.book)
     public var highlights: [Highlight] = []
+
+    @Relationship(deleteRule: .cascade, inverse: \StickyNote.book)
+    public var stickyNotes: [StickyNote] = []
+
+    /// Folders this book belongs to (many-to-many). The inverse is declared on `Folder.books`.
+    public var folders: [Folder] = []
 
     public init(
         id: UUID = UUID(),

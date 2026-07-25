@@ -2,17 +2,15 @@ import FlipbookCore
 import FlipbookDesignSystem
 import SwiftUI
 
-/// The reader's collapsible side panel: Contents / Thumbnails / Bookmarks / Highlights / Ask AI.
+/// The reader's collapsible side panel: Contents / Thumbnails / Bookmarks / Highlights.
 struct ReaderSidebarView: View {
     let session: ReadingSession
     let theme: ThemeDefinition
-    /// Owned by `ReaderView` so it survives sidebar tab switches without losing conversation state.
-    let aiController: AIChatController?
 
     @Environment(AppModel.self) private var appModel
 
     enum Tab: String, CaseIterable, Identifiable {
-        case contents, thumbnails, bookmarks, highlights, ai
+        case contents, thumbnails, bookmarks, highlights
         var id: String { rawValue }
 
         var symbol: String {
@@ -21,7 +19,6 @@ struct ReaderSidebarView: View {
             case .thumbnails: "square.grid.2x2"
             case .bookmarks: "bookmark"
             case .highlights: "highlighter"
-            case .ai: "sparkles"
             }
         }
 
@@ -31,7 +28,6 @@ struct ReaderSidebarView: View {
             case .thumbnails: "Thumbnails"
             case .bookmarks: "Bookmarks"
             case .highlights: "Highlights"
-            case .ai: "Ask AI"
             }
         }
     }
@@ -63,19 +59,9 @@ struct ReaderSidebarView: View {
                 BookmarksTabView(session: session)
             case .highlights:
                 HighlightsTabView(session: session)
-            case .ai:
-                if !appModel.settings.aiEnabled {
-                    AIDisabledStateView()
-                } else if let aiController {
-                    AIChatView(controller: aiController)
-                } else {
-                    Color.clear
-                }
             }
         }
-        // The Ask AI tab gets a wider berth (chat + a reference rail, Mobbin-style) — the
-        // book stays visible in the remaining space, unlike a full takeover.
-        .frame(width: tab == .ai ? 460 : 264)
+        .frame(width: 288)
         .animation(AnimationTokens.standard, value: tab)
         .background(.regularMaterial)
     }
@@ -228,47 +214,103 @@ private struct ThumbnailCell: View {
 private struct BookmarksTabView: View {
     let session: ReadingSession
 
+    @State private var renaming: Bookmark?
+    @State private var labelDraft = ""
+
     private var sortedBookmarks: [Bookmark] {
         session.book.bookmarks.sorted { $0.pageIndex < $1.pageIndex }
     }
 
+    private func color(for bookmark: Bookmark) -> Color {
+        HighlightPalette.color(for: bookmark.colorTag ?? "honey")
+    }
+
     var body: some View {
-        if sortedBookmarks.isEmpty {
-            SidebarEmptyState(
-                symbol: "bookmark",
-                message: "No bookmarks yet. Press ⌘D while reading to add one."
-            )
-        } else {
-            List(sortedBookmarks, id: \.id) { bookmark in
-                Button {
-                    session.jump(toPage: bookmark.pageIndex)
-                } label: {
-                    HStack(spacing: SpacingTokens.sm) {
-                        Image(systemName: "bookmark.fill")
-                            .font(.caption)
-                            .foregroundStyle(Color(red: 0.78, green: 0.35, blue: 0.28))
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(bookmark.label ?? "Page \(bookmark.pageIndex + 1)")
-                                .font(TypographyTokens.callout)
-                            Text("Page \(bookmark.pageIndex + 1)")
-                                .font(TypographyTokens.caption)
-                                .foregroundStyle(ColorTokens.chromeSecondaryText)
-                        }
-                        Spacer()
-                    }
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .contextMenu {
-                    Button("Remove Bookmark", role: .destructive) {
-                        withAnimation(AnimationTokens.quick) {
-                            session.removeBookmark(bookmark)
+        Group {
+            if sortedBookmarks.isEmpty {
+                SidebarEmptyState(
+                    symbol: "bookmark",
+                    message: "No bookmarks yet. Press ⌘D while reading to add one, then name it here to find your way back."
+                )
+            } else {
+                ScrollView {
+                    LazyVStack(spacing: SpacingTokens.sm) {
+                        ForEach(sortedBookmarks, id: \.id) { bookmark in
+                            bookmarkCard(bookmark)
                         }
                     }
+                    .padding(SpacingTokens.md)
                 }
             }
-            .listStyle(.sidebar)
-            .scrollContentBackground(.hidden)
+        }
+        .alert("Name Bookmark", isPresented: Binding(
+            get: { renaming != nil },
+            set: { if !$0 { renaming = nil } }
+        )) {
+            TextField("e.g. Key argument", text: $labelDraft)
+            Button("Cancel", role: .cancel) { renaming = nil }
+            Button("Save") {
+                if let bookmark = renaming {
+                    session.renameBookmark(bookmark, label: labelDraft)
+                }
+                renaming = nil
+            }
+        }
+    }
+
+    private func bookmarkCard(_ bookmark: Bookmark) -> some View {
+        Button {
+            session.jump(toPage: bookmark.pageIndex)
+        } label: {
+            HStack(spacing: SpacingTokens.sm) {
+                Image(systemName: "bookmark.fill")
+                    .font(.callout)
+                    .foregroundStyle(color(for: bookmark))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(bookmark.label ?? "Page \(bookmark.pageIndex + 1)")
+                        .font(TypographyTokens.callout)
+                        .foregroundStyle(ColorTokens.chromeText)
+                        .lineLimit(1)
+                    Text("Page \(bookmark.pageIndex + 1)")
+                        .font(TypographyTokens.caption)
+                        .foregroundStyle(ColorTokens.chromeSecondaryText)
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(SpacingTokens.sm)
+            .background(
+                RoundedRectangle(cornerRadius: SpacingTokens.cornerRadiusMedium, style: .continuous)
+                    .fill(.background.opacity(0.6))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: SpacingTokens.cornerRadiusMedium, style: .continuous)
+                    .strokeBorder(ColorTokens.chromeSeparator.opacity(0.5), lineWidth: 0.5)
+            )
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .contextMenu {
+            Button("Rename…", systemImage: "pencil") {
+                labelDraft = bookmark.label ?? ""
+                renaming = bookmark
+            }
+            Menu {
+                ForEach(HighlightPalette.all) { entry in
+                    Button {
+                        session.setBookmarkColor(bookmark, colorTag: entry.id)
+                    } label: {
+                        Label(entry.name, systemImage: (bookmark.colorTag ?? "honey") == entry.id ? "checkmark" : "circle.fill")
+                    }
+                }
+            } label: {
+                Label("Colour", systemImage: "paintpalette")
+            }
+            Divider()
+            Button("Remove Bookmark", role: .destructive) {
+                withAnimation(AnimationTokens.quick) {
+                    session.removeBookmark(bookmark)
+                }
+            }
         }
     }
 }

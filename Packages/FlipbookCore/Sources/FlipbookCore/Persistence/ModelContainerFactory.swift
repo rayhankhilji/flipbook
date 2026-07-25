@@ -10,6 +10,9 @@ public enum ModelContainerFactory {
             Highlight.self,
             ThemeOverride.self,
             AppSettings.self,
+            Folder.self,
+            StickyNote.self,
+            ReadingDay.self,
         ])
     }
 

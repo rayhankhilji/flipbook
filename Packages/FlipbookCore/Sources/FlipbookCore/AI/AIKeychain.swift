@@ -3,8 +3,8 @@ import Security
 
 /// Stores each provider's API key in the login Keychain — never in SwiftData, UserDefaults,
 /// or plain files. Keys are secrets the user brings (BYOK); they stay on-device and are only
-/// ever sent to that provider's API over TLS. One key per provider, so the user can keep
-/// several configured and switch between them.
+/// ever sent to that provider's API over TLS. One key per provider, so several can stay
+/// configured and the user can switch between them freely.
 public enum AIKeychain {
     private static let service = "com.flipbook.app.ai"
 
@@ -18,6 +18,7 @@ public enum AIKeychain {
             delete(for: provider)
             return
         }
+        // Upsert: clear any existing item first so attributes stay clean.
         delete(for: provider)
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,

@@ -18,10 +18,14 @@ struct FlipbookApp: App {
                 .environment(appModel)
                 .tint(appModel.accentColor)
                 .preferredColorScheme(appModel.preferredColorScheme)
-                .frame(minWidth: 720, minHeight: 480)
         }
         .modelContainer(modelContainer)
         .windowStyle(.automatic)
+        .defaultSize(width: 1000, height: 680)
+        // The library pins a fixed frame (see LibraryView), which under .contentSize
+        // resizability makes the compact window non-user-resizable; while reading the frame
+        // relaxes and the window runs full screen.
+        .windowResizability(.contentSize)
         .commands {
             CommandGroup(replacing: .newItem) {
                 Button("Import PDF…") {

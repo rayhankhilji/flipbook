@@ -147,6 +147,28 @@ final class ReadingSession {
         try? modelContext.save()
     }
 
+    func renameBookmark(_ bookmark: Bookmark, label: String) {
+        let trimmed = label.trimmingCharacters(in: .whitespacesAndNewlines)
+        bookmark.label = trimmed.isEmpty ? nil : trimmed
+        try? modelContext.save()
+    }
+
+    func setBookmarkColor(_ bookmark: Bookmark, colorTag: String) {
+        bookmark.colorTag = colorTag
+        try? modelContext.save()
+    }
+
+    /// Adds a bookmark for the current page if absent, returning it (or the existing one) so
+    /// the caller can immediately prompt for a name.
+    @discardableResult
+    func addBookmarkIfNeeded() -> Bookmark {
+        if let existing = bookmark(forPage: currentPageIndex) { return existing }
+        let created = Bookmark(book: book, pageIndex: currentPageIndex)
+        modelContext.insert(created)
+        try? modelContext.save()
+        return created
+    }
+
     // MARK: - Highlighter tool
 
     /// A marker you toggle on from the toolbar. While active, dragging on a page paints a
@@ -217,6 +239,61 @@ final class ReadingSession {
     func updateNote(for highlight: Highlight, note: String) {
         let trimmed = note.trimmingCharacters(in: .whitespacesAndNewlines)
         highlight.note = trimmed.isEmpty ? nil : trimmed
+        try? modelContext.save()
+    }
+
+    // MARK: - Sticky notes
+
+    func stickyNotes(forPage index: Int) -> [StickyNote] {
+        book.stickyNotes.filter { $0.pageIndex == index }
+    }
+
+    @discardableResult
+    func addStickyNote(pageIndex: Int, colorTag: String = "lemon") -> StickyNote {
+        // Nudge each new note off-center so a burst of them doesn't stack exactly.
+        let jitter = Double(stickyNotes(forPage: pageIndex).count % 4) * 0.06
+        let note = StickyNote(
+            book: book,
+            pageIndex: pageIndex,
+            normalizedX: 0.5 + jitter,
+            normalizedY: 0.35 + jitter,
+            colorTag: colorTag
+        )
+        modelContext.insert(note)
+        try? modelContext.save()
+        return note
+    }
+
+    func moveStickyNote(_ note: StickyNote, normalizedX x: Double, normalizedY y: Double) {
+        note.normalizedX = min(max(x, -0.35), 1.35)
+        note.normalizedY = min(max(y, -0.35), 1.35)
+        try? modelContext.save()
+    }
+
+    func updateStickyNote(_ note: StickyNote, text: String) {
+        note.text = text
+        try? modelContext.save()
+    }
+
+    /// Rich-editor save path: RTF is the source of truth, `text` its plain mirror.
+    func updateStickyNote(_ note: StickyNote, plainText: String, rtfData: Data?) {
+        note.text = plainText
+        note.rtfData = rtfData
+        try? modelContext.save()
+    }
+
+    func setStickyNote(_ note: StickyNote, expanded: Bool) {
+        note.isExpanded = expanded
+        try? modelContext.save()
+    }
+
+    func setStickyNoteColor(_ note: StickyNote, colorTag: String) {
+        note.colorTag = colorTag
+        try? modelContext.save()
+    }
+
+    func removeStickyNote(_ note: StickyNote) {
+        modelContext.delete(note)
         try? modelContext.save()
     }
 

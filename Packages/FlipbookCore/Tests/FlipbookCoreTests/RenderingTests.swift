@@ -80,4 +80,44 @@ import Testing
         let image = await renderer.image(pageIndex: 99, zoom: 1.0, themeID: "original", screenScale: 2)
         #expect(image == nil)
     }
+
+    /// End-to-end guard for "themes only change the background, not the page": a white page
+    /// rendered through the full PageRenderer + ThemeCompositor path with a light theme MUST
+    /// come out visibly tinted (cream's paper drops the blue channel well below white).
+    @Test func lightThemeTintsPagePixelsEndToEnd() async throws {
+        let url = try makeFixturePDF()
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        let bookDocument = try #require(BookDocument(url: url))
+        let renderer = PageRenderer(
+            bookID: UUID(),
+            document: bookDocument,
+            compositor: ThemeCompositor.shared.makeRendererHook()
+        )
+
+        func centerPixel(themeID: String) async throws -> (r: Double, g: Double, b: Double) {
+            let image = try #require(
+                await renderer.image(pageIndex: 0, zoom: 1.0, themeID: themeID, screenScale: 1)
+            )
+            var px = [UInt8](repeating: 0, count: 4)
+            let ctx = try #require(CGContext(
+                data: &px, width: 1, height: 1, bitsPerComponent: 8, bytesPerRow: 4,
+                space: CGColorSpace(name: CGColorSpace.sRGB)!,
+                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+            ))
+            ctx.draw(image, in: CGRect(x: -CGFloat(image.width) / 2, y: -CGFloat(image.height) / 2,
+                                       width: CGFloat(image.width), height: CGFloat(image.height)))
+            return (Double(px[0]) / 255, Double(px[1]) / 255, Double(px[2]) / 255)
+        }
+
+        let original = try await centerPixel(themeID: "original")
+        #expect(original.b > 0.95, "original should stay near-white")
+
+        let cream = try await centerPixel(themeID: "cream")
+        #expect(cream.b < 0.85, "cream page paper must be visibly tinted, got \(cream)")
+        #expect(cream.r > cream.b, "cream tint is warm — red should lead blue")
+
+        let sepia = try await centerPixel(themeID: "sepia")
+        #expect(sepia.b < 0.75, "sepia page paper must be strongly tinted, got \(sepia)")
+    }
 }

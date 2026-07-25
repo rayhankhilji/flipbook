@@ -38,10 +38,10 @@ public enum AIServiceError: LocalizedError {
     }
 }
 
-/// Talks to AI providers directly over HTTPS. There is no official SDK for Swift, so this
+/// Talks to AI providers directly over HTTPS. No official SDK exists for Swift, so this
 /// speaks the raw REST + SSE protocols: Anthropic's Messages API for Claude, and OpenAI
-/// Chat Completions for OpenAI, Gemini, and YUNWU (which share one code path). Keys are read
-/// from the Keychain per call, per provider.
+/// Chat Completions for OpenAI, Gemini, and YUNWU (one shared code path). Keys are read
+/// from the Keychain per call, per provider — never held in memory beyond a request.
 public actor AIService {
     public static let shared = AIService()
 
@@ -56,8 +56,7 @@ public actor AIService {
         system: String?,
         history: [AIChatMessage],
         modelID: String,
-        maxTokens: Int = 4096,
-        webSearch: Bool = false
+        maxTokens: Int = 4096
     ) -> AsyncThrowingStream<String, Error> {
         AsyncThrowingStream { continuation in
             let task = Task {
@@ -67,11 +66,12 @@ public actor AIService {
                     }
                     let request = try makeRequest(
                         provider: provider, key: key, system: system, history: history,
-                        modelID: modelID, maxTokens: maxTokens, webSearch: webSearch, stream: true
+                        modelID: modelID, maxTokens: maxTokens, stream: true
                     )
 
                     let (bytes, response) = try await URLSession.shared.bytes(for: request)
                     if let http = response as? HTTPURLResponse, http.statusCode != 200 {
+                        // Error bodies aren't SSE — drain and surface the message.
                         var body = ""
                         for try await line in bytes.lines { body += line }
                         throw AIServiceError.http(status: http.statusCode, message: Self.extractError(from: body))
@@ -98,7 +98,7 @@ public actor AIService {
         }
     }
 
-    // MARK: - One-shot completion (summaries, notes, key validation)
+    // MARK: - One-shot completion (summaries, key validation)
 
     public func complete(
         provider: AIProvider,
@@ -111,7 +111,7 @@ public actor AIService {
         let request = try makeRequest(
             provider: provider, key: key, system: system,
             history: [AIChatMessage(role: .user, text: prompt)],
-            modelID: modelID, maxTokens: maxTokens, webSearch: false, stream: false
+            modelID: modelID, maxTokens: maxTokens, stream: false
         )
         let (data, response) = try await URLSession.shared.data(for: request)
         if let http = response as? HTTPURLResponse, http.statusCode != 200 {
@@ -136,68 +136,48 @@ public actor AIService {
 
     private func makeRequest(
         provider: AIProvider, key: String, system: String?, history: [AIChatMessage],
-        modelID: String, maxTokens: Int, webSearch: Bool, stream: Bool
+        modelID: String, maxTokens: Int, stream: Bool
     ) throws -> URLRequest {
         switch provider.wire {
         case .anthropic:
-            return try makeAnthropicRequest(
-                baseURL: provider.baseURL, key: key, system: system, history: history,
-                modelID: modelID, maxTokens: maxTokens, webSearch: webSearch, stream: stream
-            )
+            var request = URLRequest(url: provider.baseURL.appendingPathComponent("v1/messages"))
+            request.httpMethod = "POST"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.setValue(key, forHTTPHeaderField: "x-api-key")
+            request.setValue(anthropicVersion, forHTTPHeaderField: "anthropic-version")
+
+            var body: [String: Any] = [
+                "model": modelID,
+                "max_tokens": maxTokens,
+                "stream": stream,
+                "messages": history.map { ["role": $0.role.rawValue, "content": $0.text] },
+            ]
+            if let system, !system.isEmpty { body["system"] = system }
+            request.httpBody = try JSONSerialization.data(withJSONObject: body)
+            return request
+
         case .openAICompatible:
-            return try makeOpenAIRequest(
-                baseURL: provider.baseURL, key: key, system: system, history: history,
-                modelID: modelID, maxTokens: maxTokens, stream: stream
-            )
+            var request = URLRequest(url: provider.baseURL.appendingPathComponent("chat/completions"))
+            request.httpMethod = "POST"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.setValue("Bearer \(key)", forHTTPHeaderField: "Authorization")
+
+            // OpenAI carries the system prompt as a leading `system` message.
+            var messages: [[String: Any]] = []
+            if let system, !system.isEmpty {
+                messages.append(["role": "system", "content": system])
+            }
+            messages += history.map { ["role": $0.role.rawValue, "content": $0.text] }
+
+            let body: [String: Any] = [
+                "model": modelID,
+                "max_tokens": maxTokens,
+                "stream": stream,
+                "messages": messages,
+            ]
+            request.httpBody = try JSONSerialization.data(withJSONObject: body)
+            return request
         }
-    }
-
-    private func makeAnthropicRequest(
-        baseURL: URL, key: String, system: String?, history: [AIChatMessage],
-        modelID: String, maxTokens: Int, webSearch: Bool, stream: Bool
-    ) throws -> URLRequest {
-        var request = URLRequest(url: baseURL.appendingPathComponent("v1/messages"))
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue(key, forHTTPHeaderField: "x-api-key")
-        request.setValue(anthropicVersion, forHTTPHeaderField: "anthropic-version")
-
-        var body: [String: Any] = [
-            "model": modelID,
-            "max_tokens": maxTokens,
-            "stream": stream,
-            "messages": history.map { ["role": $0.role.rawValue, "content": $0.text] },
-        ]
-        if let system, !system.isEmpty { body["system"] = system }
-        if webSearch { body["tools"] = [["type": "web_search_20260209", "name": "web_search"]] }
-        request.httpBody = try JSONSerialization.data(withJSONObject: body)
-        return request
-    }
-
-    private func makeOpenAIRequest(
-        baseURL: URL, key: String, system: String?, history: [AIChatMessage],
-        modelID: String, maxTokens: Int, stream: Bool
-    ) throws -> URLRequest {
-        var request = URLRequest(url: baseURL.appendingPathComponent("chat/completions"))
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("Bearer \(key)", forHTTPHeaderField: "Authorization")
-
-        // OpenAI carries the system prompt as a leading `system` message.
-        var messages: [[String: Any]] = []
-        if let system, !system.isEmpty {
-            messages.append(["role": "system", "content": system])
-        }
-        messages += history.map { ["role": $0.role.rawValue, "content": $0.text] }
-
-        let body: [String: Any] = [
-            "model": modelID,
-            "max_tokens": maxTokens,
-            "stream": stream,
-            "messages": messages,
-        ]
-        request.httpBody = try JSONSerialization.data(withJSONObject: body)
-        return request
     }
 
     // MARK: - Response parsing
@@ -216,8 +196,9 @@ public actor AIService {
 
         switch wire {
         case .anthropic:
-            if (json["type"] as? String) == "message_stop" { return doneSentinel }
-            if (json["type"] as? String) == "content_block_delta",
+            let type = json["type"] as? String
+            if type == "message_stop" { return doneSentinel }
+            if type == "content_block_delta",
                let delta = json["delta"] as? [String: Any],
                let text = delta["text"] as? String {
                 return text

@@ -7,34 +7,34 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1CF25165A8F52B558E5ABCF8 /* AIChatEmptyStates.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6D45C6B28704D44F448106A /* AIChatEmptyStates.swift */; };
+		2AF65D51A927187CD907CF7C /* PageScrollNSView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E750A719D3CFF61ED845E383 /* PageScrollNSView.swift */; };
 		3369AE006A99686D333262AF /* PageAnnotationsOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B2CA0179A00AAF402F75112 /* PageAnnotationsOverlay.swift */; };
+		376D31D0D991BCD46485C1B1 /* StickyNotesLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A7604E8ECEE94CA7D81B0F1 /* StickyNotesLayer.swift */; };
+		3A4817FE48AAF7D9E94A53D8 /* MarkdownText.swift in Sources */ = {isa = PBXBuildFile; fileRef = A85F2695B1B7D1C087353865 /* MarkdownText.swift */; };
 		3C71140E2FB31B58FE3CF353 /* FlipbookDesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = 19742EA816A669F55F67576C /* FlipbookDesignSystem */; };
 		401FF91F07077AED1DA5AA18 /* LibraryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3BA9FDC73779A25D404E8A8 /* LibraryViewModel.swift */; };
 		4AEE6F546F9918700894DBD2 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51BF6997FAE09AA6B0D174EA /* AppModel.swift */; };
-		5F114AEB7F0F9F1D11373F08 /* AIChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAC7E904409E2CFA93B4DB43 /* AIChatView.swift */; };
+		4D362D477B79A60C4F161A75 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AD605E7D24F18A37586F435 /* DashboardView.swift */; };
 		6631B1607EF132FD401F4E4C /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6BA954709B1B43DE352262 /* LibraryView.swift */; };
 		6EBE818A713A78849BFAFE5E /* SettingsScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE936D6C1250527BA2F8144B /* SettingsScene.swift */; };
 		76DD70B98963425AC5569F6F /* ImportDropDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD1328A3E041DBBB028C68A6 /* ImportDropDelegate.swift */; };
-		807DEE4179C9640F678F3231 /* AIMessageListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C183780F392D68745F35653 /* AIMessageListView.swift */; };
 		85C10009DBC74CFB8B4B5908 /* ReadingOptionsPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = A03D497E09771EBF4755D5E7 /* ReadingOptionsPopover.swift */; };
 		908B667C9A5259BB3AEEC80D /* ReaderSidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA3A33C155E21D9E03DB42C4 /* ReaderSidebarView.swift */; };
 		9435509D3AF40BAB10B5C399 /* ReaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F861513388159ACE64D7EC9E /* ReaderView.swift */; };
 		94B74112E0E96528C3F73353 /* HighlighterBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6CDC2B68F4911D23DE99298 /* HighlighterBar.swift */; };
-		A52DFB722A7508C22DD4A40D /* AIChatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E30F41A031FF32CB1C2C579 /* AIChatController.swift */; };
+		A01F9CA3D0EBCD73CD5FD897 /* ChatPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5FC73812FAFD9D2DE8B407 /* ChatPanelView.swift */; };
 		AB5C1CAABDB00D1DF0148379 /* FocusEscapeBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5EADADDA4FE7D4AFB6EA1CE /* FocusEscapeBar.swift */; };
 		B179FCABF21C8EF79DCEDF97 /* PageTurnContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9151CD329E627F57918DB5E /* PageTurnContainerView.swift */; };
+		B318274D374AE9E7867DA15D /* BookChatModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A8A1773F8FF65E8FC5F31B1 /* BookChatModel.swift */; };
 		B5472FD077716F00F1DD150D /* FlipbookApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08763C792850ED4B8381C346 /* FlipbookApp.swift */; };
-		B77051B1676B7BCC23280B71 /* ChatMarkdown.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ADA1792B93FCEDAAEDBA214 /* ChatMarkdown.swift */; };
 		BC77C2379621DEF6E336F514 /* BookCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41CF53DE4A41127222957076 /* BookCardView.swift */; };
 		C2B066E5094F698A21EB7493 /* FlipbookCore in Frameworks */ = {isa = PBXBuildFile; productRef = 975A02FDDB689725A2E26136 /* FlipbookCore */; };
 		C4D6981A34E5BCFFE0AEEF77 /* ContinuousScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2CC54B9EB7F8A6A3D3FB35B /* ContinuousScrollView.swift */; };
+		C9E06BF361D662B70C05A80C /* WindowConfigurator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 025E31697BA5B21396B50EBA /* WindowConfigurator.swift */; };
 		D16F3125198795AB10EBBCB1 /* ReflowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82D5D2763C434995C353781 /* ReflowView.swift */; };
 		D1CD21B99DBA309B8B6CF229 /* PageTurnNSView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 227281A570C38EFF64E500E1 /* PageTurnNSView.swift */; };
-		D85FB77ED5BAD68E5FE19AEA /* AISourcesRailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30E5687890C6350B542424F7 /* AISourcesRailView.swift */; };
 		D95D653B93183A43764BE568 /* LaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 981A57C35DEB957722A865FF /* LaunchTests.swift */; };
-		DBF73CAFE14218755097B27E /* AIComposerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DB3EDB764CD512A1EEA289C /* AIComposerView.swift */; };
-		ED6459DA6F31B78F964CF43E /* AIMessageBubbleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89B1AC9532A3A5C2AC1D7321 /* AIMessageBubbleView.swift */; };
+		E54B230D6100E90F7D27F2C8 /* BookEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F04332B68AC82E1E5C0FB8C /* BookEditSheet.swift */; };
 		F2566E93B1DC8CD64AF967B6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E29885AE1B759181941E8D42 /* Assets.xcassets */; };
 		F5B9DBBF8D1A8A48EB3908EB /* ReadingSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = B55B6E5DC6BA98F83CB82C77 /* ReadingSession.swift */; };
 		FE5ECB4AF3EFAE950A7F4B65 /* SceneCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E5BF89E8424DF9F29E697B4 /* SceneCommands.swift */; };
@@ -51,37 +51,37 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		025E31697BA5B21396B50EBA /* WindowConfigurator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowConfigurator.swift; sourceTree = "<group>"; };
 		08763C792850ED4B8381C346 /* FlipbookApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlipbookApp.swift; sourceTree = "<group>"; };
 		0B2CA0179A00AAF402F75112 /* PageAnnotationsOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageAnnotationsOverlay.swift; sourceTree = "<group>"; };
-		0DB3EDB764CD512A1EEA289C /* AIComposerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIComposerView.swift; sourceTree = "<group>"; };
 		1818BB9B5EB0C3AAADCFC8E1 /* FlipbookTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FlipbookTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		1C183780F392D68745F35653 /* AIMessageListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIMessageListView.swift; sourceTree = "<group>"; };
 		227281A570C38EFF64E500E1 /* PageTurnNSView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageTurnNSView.swift; sourceTree = "<group>"; };
-		30E5687890C6350B542424F7 /* AISourcesRailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AISourcesRailView.swift; sourceTree = "<group>"; };
 		37E2AA941274D9E1ABAC346E /* FlipbookCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = FlipbookCore; path = Packages/FlipbookCore; sourceTree = SOURCE_ROOT; };
 		3E5BF89E8424DF9F29E697B4 /* SceneCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneCommands.swift; sourceTree = "<group>"; };
 		41CF53DE4A41127222957076 /* BookCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookCardView.swift; sourceTree = "<group>"; };
 		51BF6997FAE09AA6B0D174EA /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
-		5ADA1792B93FCEDAAEDBA214 /* ChatMarkdown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMarkdown.swift; sourceTree = "<group>"; };
 		63CD16AAF787EA4418491018 /* FlipbookDesignSystem */ = {isa = PBXFileReference; lastKnownFileType = folder; name = FlipbookDesignSystem; path = Packages/FlipbookDesignSystem; sourceTree = SOURCE_ROOT; };
+		6A7604E8ECEE94CA7D81B0F1 /* StickyNotesLayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StickyNotesLayer.swift; sourceTree = "<group>"; };
+		6D5FC73812FAFD9D2DE8B407 /* ChatPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatPanelView.swift; sourceTree = "<group>"; };
 		6D6BA954709B1B43DE352262 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
-		6E30F41A031FF32CB1C2C579 /* AIChatController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIChatController.swift; sourceTree = "<group>"; };
-		89B1AC9532A3A5C2AC1D7321 /* AIMessageBubbleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIMessageBubbleView.swift; sourceTree = "<group>"; };
+		6F04332B68AC82E1E5C0FB8C /* BookEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookEditSheet.swift; sourceTree = "<group>"; };
+		7A8A1773F8FF65E8FC5F31B1 /* BookChatModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookChatModel.swift; sourceTree = "<group>"; };
+		8AD605E7D24F18A37586F435 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
 		981A57C35DEB957722A865FF /* LaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchTests.swift; sourceTree = "<group>"; };
 		A03D497E09771EBF4755D5E7 /* ReadingOptionsPopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingOptionsPopover.swift; sourceTree = "<group>"; };
-		AAC7E904409E2CFA93B4DB43 /* AIChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIChatView.swift; sourceTree = "<group>"; };
+		A85F2695B1B7D1C087353865 /* MarkdownText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownText.swift; sourceTree = "<group>"; };
 		ABC80DE401B078CDEE8373A3 /* Flipbook.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Flipbook.entitlements; sourceTree = "<group>"; };
 		AD4A6E567142E65B7E4DE5BE /* Flipbook.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Flipbook.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B2CC54B9EB7F8A6A3D3FB35B /* ContinuousScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContinuousScrollView.swift; sourceTree = "<group>"; };
 		B3BA9FDC73779A25D404E8A8 /* LibraryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViewModel.swift; sourceTree = "<group>"; };
 		B55B6E5DC6BA98F83CB82C77 /* ReadingSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingSession.swift; sourceTree = "<group>"; };
-		B6D45C6B28704D44F448106A /* AIChatEmptyStates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIChatEmptyStates.swift; sourceTree = "<group>"; };
 		BD1328A3E041DBBB028C68A6 /* ImportDropDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportDropDelegate.swift; sourceTree = "<group>"; };
 		C82D5D2763C434995C353781 /* ReflowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflowView.swift; sourceTree = "<group>"; };
 		CE936D6C1250527BA2F8144B /* SettingsScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsScene.swift; sourceTree = "<group>"; };
 		DA3A33C155E21D9E03DB42C4 /* ReaderSidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderSidebarView.swift; sourceTree = "<group>"; };
 		E29885AE1B759181941E8D42 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E5EADADDA4FE7D4AFB6EA1CE /* FocusEscapeBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusEscapeBar.swift; sourceTree = "<group>"; };
+		E750A719D3CFF61ED845E383 /* PageScrollNSView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageScrollNSView.swift; sourceTree = "<group>"; };
 		F6CDC2B68F4911D23DE99298 /* HighlighterBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HighlighterBar.swift; sourceTree = "<group>"; };
 		F861513388159ACE64D7EC9E /* ReaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderView.swift; sourceTree = "<group>"; };
 		F9151CD329E627F57918DB5E /* PageTurnContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageTurnContainerView.swift; sourceTree = "<group>"; };
@@ -104,11 +104,20 @@
 			isa = PBXGroup;
 			children = (
 				41CF53DE4A41127222957076 /* BookCardView.swift */,
+				6F04332B68AC82E1E5C0FB8C /* BookEditSheet.swift */,
 				BD1328A3E041DBBB028C68A6 /* ImportDropDelegate.swift */,
 				6D6BA954709B1B43DE352262 /* LibraryView.swift */,
 				B3BA9FDC73779A25D404E8A8 /* LibraryViewModel.swift */,
 			);
 			path = Library;
+			sourceTree = "<group>";
+		};
+		145481E26887EF94627909DE /* Dashboard */ = {
+			isa = PBXGroup;
+			children = (
+				8AD605E7D24F18A37586F435 /* DashboardView.swift */,
+			);
+			path = Dashboard;
 			sourceTree = "<group>";
 		};
 		1DB2E1B4C4D19F368BE76E5F /* Packages */ = {
@@ -125,6 +134,7 @@
 			children = (
 				B2CC54B9EB7F8A6A3D3FB35B /* ContinuousScrollView.swift */,
 				E5EADADDA4FE7D4AFB6EA1CE /* FocusEscapeBar.swift */,
+				E750A719D3CFF61ED845E383 /* PageScrollNSView.swift */,
 				F861513388159ACE64D7EC9E /* ReaderView.swift */,
 				A03D497E09771EBF4755D5E7 /* ReadingOptionsPopover.swift */,
 				B55B6E5DC6BA98F83CB82C77 /* ReadingSession.swift */,
@@ -168,6 +178,7 @@
 				51BF6997FAE09AA6B0D174EA /* AppModel.swift */,
 				08763C792850ED4B8381C346 /* FlipbookApp.swift */,
 				3E5BF89E8424DF9F29E697B4 /* SceneCommands.swift */,
+				025E31697BA5B21396B50EBA /* WindowConfigurator.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -185,6 +196,7 @@
 			isa = PBXGroup;
 			children = (
 				8B2BDED8442AEED2270308CF /* AI */,
+				145481E26887EF94627909DE /* Dashboard */,
 				EB55ECE5E7AB8A5BCE57AD20 /* Highlights */,
 				0B433412A39400A5B5062AA4 /* Library */,
 				2908DA1AB81BFCB96BC26671 /* Reader */,
@@ -196,14 +208,9 @@
 		8B2BDED8442AEED2270308CF /* AI */ = {
 			isa = PBXGroup;
 			children = (
-				6E30F41A031FF32CB1C2C579 /* AIChatController.swift */,
-				B6D45C6B28704D44F448106A /* AIChatEmptyStates.swift */,
-				AAC7E904409E2CFA93B4DB43 /* AIChatView.swift */,
-				0DB3EDB764CD512A1EEA289C /* AIComposerView.swift */,
-				89B1AC9532A3A5C2AC1D7321 /* AIMessageBubbleView.swift */,
-				1C183780F392D68745F35653 /* AIMessageListView.swift */,
-				30E5687890C6350B542424F7 /* AISourcesRailView.swift */,
-				5ADA1792B93FCEDAAEDBA214 /* ChatMarkdown.swift */,
+				7A8A1773F8FF65E8FC5F31B1 /* BookChatModel.swift */,
+				6D5FC73812FAFD9D2DE8B407 /* ChatPanelView.swift */,
+				A85F2695B1B7D1C087353865 /* MarkdownText.swift */,
 			);
 			path = AI;
 			sourceTree = "<group>";
@@ -234,6 +241,7 @@
 			children = (
 				F6CDC2B68F4911D23DE99298 /* HighlighterBar.swift */,
 				0B2CA0179A00AAF402F75112 /* PageAnnotationsOverlay.swift */,
+				6A7604E8ECEE94CA7D81B0F1 /* StickyNotesLayer.swift */,
 			);
 			path = Highlights;
 			sourceTree = "<group>";
@@ -358,24 +366,22 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A52DFB722A7508C22DD4A40D /* AIChatController.swift in Sources */,
-				1CF25165A8F52B558E5ABCF8 /* AIChatEmptyStates.swift in Sources */,
-				5F114AEB7F0F9F1D11373F08 /* AIChatView.swift in Sources */,
-				DBF73CAFE14218755097B27E /* AIComposerView.swift in Sources */,
-				ED6459DA6F31B78F964CF43E /* AIMessageBubbleView.swift in Sources */,
-				807DEE4179C9640F678F3231 /* AIMessageListView.swift in Sources */,
-				D85FB77ED5BAD68E5FE19AEA /* AISourcesRailView.swift in Sources */,
 				4AEE6F546F9918700894DBD2 /* AppModel.swift in Sources */,
 				BC77C2379621DEF6E336F514 /* BookCardView.swift in Sources */,
-				B77051B1676B7BCC23280B71 /* ChatMarkdown.swift in Sources */,
+				B318274D374AE9E7867DA15D /* BookChatModel.swift in Sources */,
+				E54B230D6100E90F7D27F2C8 /* BookEditSheet.swift in Sources */,
+				A01F9CA3D0EBCD73CD5FD897 /* ChatPanelView.swift in Sources */,
 				C4D6981A34E5BCFFE0AEEF77 /* ContinuousScrollView.swift in Sources */,
+				4D362D477B79A60C4F161A75 /* DashboardView.swift in Sources */,
 				B5472FD077716F00F1DD150D /* FlipbookApp.swift in Sources */,
 				AB5C1CAABDB00D1DF0148379 /* FocusEscapeBar.swift in Sources */,
 				94B74112E0E96528C3F73353 /* HighlighterBar.swift in Sources */,
 				76DD70B98963425AC5569F6F /* ImportDropDelegate.swift in Sources */,
 				6631B1607EF132FD401F4E4C /* LibraryView.swift in Sources */,
 				401FF91F07077AED1DA5AA18 /* LibraryViewModel.swift in Sources */,
+				3A4817FE48AAF7D9E94A53D8 /* MarkdownText.swift in Sources */,
 				3369AE006A99686D333262AF /* PageAnnotationsOverlay.swift in Sources */,
+				2AF65D51A927187CD907CF7C /* PageScrollNSView.swift in Sources */,
 				B179FCABF21C8EF79DCEDF97 /* PageTurnContainerView.swift in Sources */,
 				D1CD21B99DBA309B8B6CF229 /* PageTurnNSView.swift in Sources */,
 				908B667C9A5259BB3AEEC80D /* ReaderSidebarView.swift in Sources */,
@@ -385,6 +391,8 @@
 				D16F3125198795AB10EBBCB1 /* ReflowView.swift in Sources */,
 				FE5ECB4AF3EFAE950A7F4B65 /* SceneCommands.swift in Sources */,
 				6EBE818A713A78849BFAFE5E /* SettingsScene.swift in Sources */,
+				376D31D0D991BCD46485C1B1 /* StickyNotesLayer.swift in Sources */,
+				C9E06BF361D662B70C05A80C /* WindowConfigurator.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

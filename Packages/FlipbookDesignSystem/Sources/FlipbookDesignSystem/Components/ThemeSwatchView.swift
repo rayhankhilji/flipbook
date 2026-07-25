@@ -24,7 +24,7 @@ public struct ThemeSwatchView: View {
                     )
                     .overlay(
                         Circle()
-                            .strokeBorder(ColorTokens.accent(for: "graphite"), lineWidth: isSelected ? 2.5 : 0)
+                            .strokeBorder(ColorTokens.brandPrimary, lineWidth: isSelected ? 2.5 : 0)
                             .padding(-3)
                     )
                     .frame(width: 32, height: 32)

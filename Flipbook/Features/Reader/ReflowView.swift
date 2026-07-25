@@ -12,6 +12,8 @@ struct ReflowView: View {
     let theme: ThemeDefinition
 
     @State private var visibleBlockID: Int?
+    @State private var pinchScale: CGFloat = 1
+    @State private var pinchAnchor: UnitPoint = .center
 
     private var settings: AppSettings { appModel.settings }
 
@@ -29,6 +31,25 @@ struct ReflowView: View {
             }
         }
         .background(theme.pageColor)
+        // Reflow's magnifier: pinch previews at the cursor, then commits as a *text size*
+        // change — reflowed text re-sets crisply instead of scaling pixels.
+        .scaleEffect(pinchScale, anchor: pinchAnchor)
+        .simultaneousGesture(pinchToResizeText, isEnabled: settings.gesturePinchToZoom)
+    }
+
+    private var pinchToResizeText: some Gesture {
+        MagnifyGesture()
+            .onChanged { value in
+                pinchAnchor = value.startAnchor
+                pinchScale = min(max(value.magnification, 0.7), 1.6)
+            }
+            .onEnded { value in
+                let dampened = 1 + (value.magnification - 1) * 0.7
+                settings.reflowTextSize = min(max(settings.reflowTextSize * dampened, 13), 32)
+                appModel.save()
+                pinchScale = 1
+                pinchAnchor = .center
+            }
     }
 
     private func content(blocks: [ReflowBlock]) -> some View {
@@ -80,21 +101,33 @@ struct ReflowView: View {
                 .textSelection(.enabled)
 
         case .pageBreak(let pageIndex):
-            if pageIndex > 0 {
-                HStack(spacing: SpacingTokens.md) {
-                    Rectangle()
-                        .fill(theme.chromeTextColor.opacity(0.15))
-                        .frame(height: 0.5)
-                    Text("\(pageIndex + 1)")
-                        .font(TypographyTokens.caption)
-                        .monospacedDigit()
-                        .foregroundStyle(theme.chromeTextColor.opacity(0.4))
-                    Rectangle()
-                        .fill(theme.chromeTextColor.opacity(0.15))
-                        .frame(height: 0.5)
+            let notes = session.stickyNotes(forPage: pageIndex)
+            VStack(alignment: .leading, spacing: SpacingTokens.sm) {
+                if pageIndex > 0 {
+                    HStack(spacing: SpacingTokens.md) {
+                        Rectangle()
+                            .fill(theme.chromeTextColor.opacity(0.15))
+                            .frame(height: 0.5)
+                        Text("\(pageIndex + 1)")
+                            .font(TypographyTokens.caption)
+                            .monospacedDigit()
+                            .foregroundStyle(theme.chromeTextColor.opacity(0.4))
+                        Rectangle()
+                            .fill(theme.chromeTextColor.opacity(0.15))
+                            .frame(height: 0.5)
+                    }
+                    .padding(.vertical, SpacingTokens.md)
+                    .accessibilityLabel(Text("Page \(pageIndex + 1)"))
                 }
-                .padding(.vertical, SpacingTokens.md)
-                .accessibilityLabel(Text("Page \(pageIndex + 1)"))
+                // The page's sticky notes, re-homed as chips since reflow has no page geometry.
+                if !notes.isEmpty {
+                    HStack(spacing: SpacingTokens.sm) {
+                        ForEach(notes) { note in
+                            ReflowNoteChip(session: session, note: note)
+                        }
+                    }
+                    .padding(.bottom, SpacingTokens.xs)
+                }
             }
         }
     }

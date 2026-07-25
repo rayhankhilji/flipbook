@@ -3,6 +3,20 @@ import FlipbookDesignSystem
 import SwiftData
 import SwiftUI
 
+/// Warm settings chrome: cream/mocha canvas behind every tab's grouped form, so the
+/// Settings window belongs to the app instead of defaulting to system gray.
+private struct SettingsChrome: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .scrollContentBackground(.hidden)
+            .background(ColorTokens.canvas)
+    }
+}
+
+extension View {
+    func settingsChrome() -> some View { modifier(SettingsChrome()) }
+}
+
 /// Native macOS Settings window. Every control binds live to the `AppSettings`
 /// singleton — changes apply immediately, no save button, per platform convention.
 struct SettingsRootView: View {
@@ -92,10 +106,47 @@ private struct ReadingSettingsTab: View {
                     Text("Continuous Scrolling").tag(NavigationMode.scroll)
                 }
 
+                Toggle("Open books in full screen", isOn: $settings.openBookFullScreen)
+                Text("When off, the window keeps its compact shape and becomes freely resizable while you read.")
+                    .font(TypographyTokens.caption)
+                    .foregroundStyle(ColorTokens.chromeSecondaryText)
+
                 Toggle("Auto-hide toolbar in full screen", isOn: $settings.fullscreenAutoHideToolbar)
+            }
+
+            Section("Night & Comfort") {
+                Toggle("Night mode", isOn: $settings.nightModeEnabled)
+                Text("From 8 PM to 7 AM your reading theme switches to the night theme automatically, and back in the morning.")
+                    .font(TypographyTokens.caption)
+                    .foregroundStyle(ColorTokens.chromeSecondaryText)
+
+                Picker("Night theme", selection: $settings.nightThemeID) {
+                    Text("Dark Grey").tag("darkGrey")
+                    Text("Midnight").tag("midnight")
+                    Text("True Black").tag("trueBlack")
+                }
+                .disabled(!settings.nightModeEnabled)
+
+                Toggle("Keep display awake while reading", isOn: $settings.keepAwakeWhileReading)
+                Text("Stops the screen dimming mid-chapter. Only active while a book is open.")
+                    .font(TypographyTokens.caption)
+                    .foregroundStyle(ColorTokens.chromeSecondaryText)
+
+                Stepper(
+                    settings.dailyGoalMinutes == 0
+                        ? "Daily reading goal: Off"
+                        : "Daily reading goal: \(settings.dailyGoalMinutes) min",
+                    value: $settings.dailyGoalMinutes,
+                    in: 0...240,
+                    step: 10
+                )
+                Text("Your progress toward the goal shows on the Home dashboard.")
+                    .font(TypographyTokens.caption)
+                    .foregroundStyle(ColorTokens.chromeSecondaryText)
             }
         }
         .formStyle(.grouped)
+        .settingsChrome()
     }
 }
 
@@ -139,6 +190,7 @@ private struct DisplaySettingsTab: View {
             }
         }
         .formStyle(.grouped)
+        .settingsChrome()
     }
 }
 
@@ -179,6 +231,7 @@ private struct NavigationSettingsTab: View {
             }
         }
         .formStyle(.grouped)
+        .settingsChrome()
     }
 }
 
@@ -238,11 +291,14 @@ private struct AppearanceSettingsTab: View {
             }
         }
         .formStyle(.grouped)
+        .settingsChrome()
     }
 }
 
 // MARK: - AI (bring-your-own-key)
 
+/// Provider setup and assistant personalization. Keys never touch SwiftData — each provider's
+/// key lives in the login Keychain, so several can stay configured at once.
 private struct AISettingsTab: View {
     @Environment(AppModel.self) private var appModel
 
@@ -265,8 +321,8 @@ private struct AISettingsTab: View {
                     get: { settings.aiProvider },
                     set: { switchProvider(to: $0) }
                 )) {
-                    ForEach(AIProvider.allCases) { p in
-                        Text(p.displayName).tag(p)
+                    ForEach(AIProvider.allCases) { option in
+                        Text(option.displayName).tag(option)
                     }
                 }
                 Text(provider.note)
@@ -275,7 +331,7 @@ private struct AISettingsTab: View {
             }
 
             Section("\(provider.displayName) API Key") {
-                Text("Flipbook uses your own key. It's stored only in your Mac's Keychain and sent directly to \(provider.displayName) over a secure connection — never to us. Each provider has its own key.")
+                Text("Flipbook uses your own key. It's stored only in your Mac's Keychain and sent directly to the provider over a secure connection — never to us. Each provider keeps its own key.")
                     .font(TypographyTokens.caption)
                     .foregroundStyle(ColorTokens.chromeSecondaryText)
 
@@ -310,13 +366,13 @@ private struct AISettingsTab: View {
                 }
                 .disabled(!hasStoredKey || testState == .testing)
 
-                Link("Get a \(provider.displayName) key", destination: provider.consoleURL)
+                Link("Get a key for \(provider.displayName)", destination: provider.consoleURL)
                     .font(TypographyTokens.caption)
             }
 
             Section("Model") {
-                // A text field (so YUNWU's arbitrary model IDs work) with a preset menu
-                // scoped to the current provider.
+                // Free-text so a newly released model works the day it ships; the menu
+                // offers this provider's presets.
                 HStack {
                     TextField("Model ID", text: Binding(
                         get: { settings.aiModelID },
@@ -338,24 +394,58 @@ private struct AISettingsTab: View {
                     Text(blurb)
                         .font(TypographyTokens.caption)
                         .foregroundStyle(ColorTokens.chromeSecondaryText)
-                } else if provider.allowsCustomModel {
-                    Text("Enter any model ID this relay supports.")
-                        .font(TypographyTokens.caption)
-                        .foregroundStyle(ColorTokens.chromeSecondaryText)
                 }
             }
 
-            Section("Features") {
+            Section("Personalization") {
                 Toggle("Enable AI features", isOn: $settings.aiEnabled)
                     .disabled(!hasStoredKey)
                     .onChange(of: settings.aiEnabled) { _, _ in appModel.save() }
 
-                Toggle("Allow web search in conversations", isOn: $settings.aiWebSearchEnabled)
-                    .disabled(!hasStoredKey)
-                    .onChange(of: settings.aiWebSearchEnabled) { _, _ in appModel.save() }
+                TextField("Assistant name (optional)", text: Binding(
+                    get: { settings.aiAssistantName },
+                    set: { settings.aiAssistantName = $0; appModel.save() }
+                ))
+                .textFieldStyle(.roundedBorder)
+
+                Picker("Response style", selection: Binding(
+                    get: { settings.aiResponseStyle },
+                    set: { settings.aiResponseStyle = $0; appModel.save() }
+                )) {
+                    ForEach(AIResponseStyle.allCases, id: \.self) { style in
+                        Text(style.label).tag(style)
+                    }
+                }
+                .pickerStyle(.segmented)
+
+                VStack(alignment: .leading, spacing: SpacingTokens.xs) {
+                    Text("Custom instructions")
+                        .font(TypographyTokens.caption)
+                        .foregroundStyle(ColorTokens.chromeSecondaryText)
+                    TextEditor(text: Binding(
+                        get: { settings.aiCustomInstructions },
+                        set: { settings.aiCustomInstructions = $0; appModel.save() }
+                    ))
+                    .font(.system(.body))
+                    .frame(height: 64)
+                    .padding(4)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .strokeBorder(ColorTokens.chromeSeparator.opacity(0.6), lineWidth: 0.5)
+                    )
+                }
+
+                Toggle("Let the assistant see the current page", isOn: Binding(
+                    get: { settings.aiAutoContextEnabled },
+                    set: { settings.aiAutoContextEnabled = $0; appModel.save() }
+                ))
+                Text("Sends the text of the page you're on so answers can reference it. Turn off to share only the book's title and author.")
+                    .font(TypographyTokens.caption)
+                    .foregroundStyle(ColorTokens.chromeSecondaryText)
             }
         }
         .formStyle(.grouped)
+        .settingsChrome()
         .onAppear(perform: refreshKeyState)
     }
 
@@ -380,8 +470,7 @@ private struct AISettingsTab: View {
 
     private func switchProvider(to newProvider: AIProvider) {
         appModel.settings.aiProvider = newProvider
-        // Default to the new provider's flagship model unless the user already typed one
-        // that belongs to it.
+        // Move to the new provider's flagship unless the current ID belongs to it already.
         if !newProvider.models.contains(where: { $0.id == appModel.settings.aiModelID }) {
             appModel.settings.aiModelID = newProvider.defaultModelID
         }
@@ -397,11 +486,11 @@ private struct AISettingsTab: View {
 
     private func runTest() {
         testState = .testing
-        let p = provider
+        let activeProvider = provider
         let modelID = appModel.settings.aiModelID
         Task {
             do {
-                try await AIService.shared.validateKey(provider: p, modelID: modelID)
+                try await AIService.shared.validateKey(provider: activeProvider, modelID: modelID)
                 testState = .success
             } catch {
                 testState = .failure(error.localizedDescription)

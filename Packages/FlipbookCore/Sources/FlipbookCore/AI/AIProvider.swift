@@ -31,8 +31,7 @@ public enum AIProvider: String, Sendable, Codable, CaseIterable, Identifiable {
         }
     }
 
-    /// The base URL that `/v1/messages` (Anthropic) or `/chat/completions` (OpenAI-style)
-    /// is appended to.
+    /// Base URL that `v1/messages` (Anthropic) or `chat/completions` (OpenAI-style) hangs off.
     public var baseURL: URL {
         switch self {
         case .anthropic: URL(string: "https://api.anthropic.com")!
@@ -52,7 +51,6 @@ public enum AIProvider: String, Sendable, Codable, CaseIterable, Identifiable {
         }
     }
 
-    /// Placeholder shown in the key field, hinting at each provider's key format.
     public var keyPlaceholder: String {
         switch self {
         case .anthropic: "sk-ant-…"
@@ -62,64 +60,73 @@ public enum AIProvider: String, Sendable, Codable, CaseIterable, Identifiable {
         }
     }
 
-    /// A one-line note about the provider, shown under the picker.
     public var note: String {
         switch self {
-        case .anthropic:
-            "Claude models, billed directly by Anthropic."
-        case .openai:
-            "GPT and o-series models, billed by OpenAI."
-        case .gemini:
-            "Gemini models via Google's OpenAI-compatible endpoint."
-        case .yunwu:
-            "One key, 200+ models (GPT/Claude/Gemini/…). Enter any model ID it supports."
+        case .anthropic: "Claude models, billed directly by Anthropic."
+        case .openai: "GPT and o-series models, billed by OpenAI."
+        case .gemini: "Gemini models via Google's OpenAI-compatible endpoint."
+        case .yunwu: "One key, 200+ models (GPT/Claude/Gemini/…). Any model ID it supports works."
         }
     }
 
-    /// YUNWU proxies arbitrary upstream model IDs, so its catalog is a starting point
-    /// rather than a closed set — the Settings UI lets the user type any model ID.
-    public var allowsCustomModel: Bool {
-        self == .yunwu
-    }
+    public var defaultModelID: String { models.first?.id ?? "" }
 
-    public var defaultModelID: String {
-        models.first?.id ?? ""
-    }
-
+    /// Presets shown in the model menu. The model field stays free-text everywhere, so a
+    /// newly released model can be used the day it ships without an app update.
     public var models: [AIModelOption] {
         switch self {
         case .anthropic:
             return [
-                AIModelOption(id: "claude-opus-4-8", name: "Claude Opus 4.8", blurb: "Most capable — best for deep author conversations."),
+                AIModelOption(id: "claude-opus-5", name: "Claude Opus 5", blurb: "Most capable — best for deep author conversations."),
                 AIModelOption(id: "claude-sonnet-5", name: "Claude Sonnet 5", blurb: "Fast and strong — lower-cost everyday choice."),
-                AIModelOption(id: "claude-haiku-4-5", name: "Claude Haiku 4.5", blurb: "Fastest and cheapest — quick summaries."),
+                AIModelOption(id: "claude-haiku-4-5-20251001", name: "Claude Haiku 4.5", blurb: "Fastest and cheapest — quick summaries."),
             ]
         case .openai:
             return [
                 AIModelOption(id: "gpt-5", name: "GPT-5", blurb: "OpenAI's most capable model."),
                 AIModelOption(id: "gpt-5-mini", name: "GPT-5 mini", blurb: "Smaller, faster, cheaper GPT-5."),
                 AIModelOption(id: "gpt-4o", name: "GPT-4o", blurb: "Fast multimodal workhorse."),
-                AIModelOption(id: "gpt-4o-mini", name: "GPT-4o mini", blurb: "Low-cost option for light tasks."),
                 AIModelOption(id: "o4-mini", name: "o4-mini", blurb: "Reasoning model, cost-efficient."),
             ]
         case .gemini:
-            // "-latest" aliases track Google's current recommended Flash/Flash-Lite so a
-            // pinned version being retired can't strand us (the old catalog pinned
-            // gemini-2.5-flash, which Google deprecated for new keys). Default is Flash-Lite
-            // — the quickest and cheapest model on the free tier.
             return [
-                AIModelOption(id: "gemini-flash-lite-latest", name: "Gemini Flash-Lite (Latest)", blurb: "Quickest and cheapest — free tier. Recommended."),
-                AIModelOption(id: "gemini-flash-latest", name: "Gemini Flash (Latest)", blurb: "More capable, still fast and free-tier friendly."),
-                AIModelOption(id: "gemini-2.5-flash-lite", name: "Gemini 2.5 Flash-Lite", blurb: "Pinned stable Flash-Lite version."),
-                AIModelOption(id: "gemini-2.5-flash", name: "Gemini 2.5 Flash", blurb: "Pinned stable Flash version."),
+                AIModelOption(id: "gemini-2.5-pro", name: "Gemini 2.5 Pro", blurb: "Google's most capable Gemini."),
+                AIModelOption(id: "gemini-2.5-flash", name: "Gemini 2.5 Flash", blurb: "Fast and cost-efficient."),
+                AIModelOption(id: "gemini-2.0-flash", name: "Gemini 2.0 Flash", blurb: "Lightweight, very fast."),
             ]
         case .yunwu:
             return [
                 AIModelOption(id: "gpt-5", name: "GPT-5 (via YUNWU)", blurb: "OpenAI GPT-5 through the relay."),
-                AIModelOption(id: "claude-opus-4-8", name: "Claude Opus 4.8 (via YUNWU)", blurb: "Claude through the relay."),
+                AIModelOption(id: "claude-opus-5", name: "Claude Opus 5 (via YUNWU)", blurb: "Claude through the relay."),
                 AIModelOption(id: "gemini-2.5-pro", name: "Gemini 2.5 Pro (via YUNWU)", blurb: "Gemini through the relay."),
                 AIModelOption(id: "deepseek-chat", name: "DeepSeek Chat (via YUNWU)", blurb: "DeepSeek through the relay."),
             ]
         }
+    }
+}
+
+/// One selectable model within a provider. IDs are the exact wire model strings.
+public struct AIModelOption: Identifiable, Sendable, Hashable {
+    public let id: String
+    public let name: String
+    public let blurb: String
+
+    public init(id: String, name: String, blurb: String) {
+        self.id = id
+        self.name = name
+        self.blurb = blurb
+    }
+}
+
+/// Lookups across every provider's catalog.
+public enum AIModelCatalog {
+    public static let defaultModelID = AIProvider.anthropic.defaultModelID
+
+    /// Display metadata for a model ID, falling back to the raw ID for custom entries.
+    public static func option(for id: String) -> AIModelOption {
+        for provider in AIProvider.allCases {
+            if let match = provider.models.first(where: { $0.id == id }) { return match }
+        }
+        return AIModelOption(id: id, name: id, blurb: "")
     }
 }

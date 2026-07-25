@@ -15,7 +15,7 @@ public struct FlipbookButtonStyle: ButtonStyle {
             .padding(.vertical, SpacingTokens.sm)
             .background(
                 RoundedRectangle(cornerRadius: SpacingTokens.cornerRadiusSmall, style: .continuous)
-                    .fill(prominent ? ColorTokens.accent(for: "graphite") : Color.clear)
+                    .fill(prominent ? ColorTokens.brandPrimary : Color.clear)
                     .opacity(prominent ? (configuration.isPressed ? 0.75 : 1.0) : (configuration.isPressed ? 0.08 : 0.0))
             )
             .overlay(

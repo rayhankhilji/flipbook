@@ -476,8 +476,17 @@ final class PageTurnNSView: NSView {
 
     // MARK: External navigation
 
+    /// Navigation requested while a flip is mid-air (second arrow press, rapid TOC taps).
+    /// Dropping it desyncs the session's page counter from the displayed spread — queue it
+    /// and run it when the current turn lands.
+    private var pendingNavigationIndex: Int?
+
     func navigate(to pageIndex: Int) {
-        guard case .idle = state, let session else { return }
+        guard let session else { return }
+        guard case .idle = state else {
+            pendingNavigationIndex = pageIndex
+            return
+        }
         let clamped = min(max(pageIndex, 0), max(session.pageCount - 1, 0))
         let targetSpread = BookSpreadLayout.spread(containing: clamped)
         guard targetSpread != displayedSpread else { return }
@@ -492,8 +501,14 @@ final class PageTurnNSView: NSView {
 
     /// Flips need the same layout shape on both sides of the turn; the cover page
     /// (centered, single) transitioning to a spread crossfades instead.
+    ///
+    /// Single-page layout (narrow/cropped windows showing one page) never does the 3D
+    /// hinge: the rotating sheet swings past the page's edges and spills over the toolbar
+    /// and window chrome, which reads as broken. Those turns crossfade instead — contained
+    /// entirely within the page, no animation escaping the reading surface.
     private func canFlip(forward: Bool) -> Bool {
         guard let session, !reduceMotion else { return false }
+        guard !currentLayout.isSingle else { return false }
         let targetSpread = displayedSpread + (forward ? 1 : -1)
         guard targetSpread >= 0,
               targetSpread < BookSpreadLayout.spreadCount(pageCount: session.pageCount)
@@ -759,6 +774,11 @@ final class PageTurnNSView: NSView {
             needsLayout = true
         }
         restageImages()
+
+        if let pending = pendingNavigationIndex {
+            pendingNavigationIndex = nil
+            navigate(to: pending)
+        }
     }
 
     private func startProgrammaticFlip(forward: Bool) {

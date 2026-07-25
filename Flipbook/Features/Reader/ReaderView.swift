@@ -9,18 +9,19 @@ import SwiftUI
 /// stay global through the View menu (`ReaderMenuCommands`).
 struct ReaderView: View {
     @Environment(AppModel.self) private var appModel
-    @Environment(\.modelContext) private var modelContext
     let session: ReadingSession
     let onClose: () -> Void
 
     @State private var pageFieldText = ""
     @State private var showingPageJump = false
     @State private var showingReadingOptions = false
-    @State private var pinchBaseZoom: CGFloat?
+    @State private var bookPinchScale: CGFloat = 1
+    @State private var bookPinchAnchor: UnitPoint = .center
     @State private var showSidebar = false
     @State private var sidebarInitialized = false
     @State private var focusMode = false
-    @State private var aiController: AIChatController?
+    @State private var showChat = false
+    @State private var chat: BookChatModel?
     @FocusState private var readerFocused: Bool
 
     private var theme: ThemeDefinition { appModel.currentTheme }
@@ -28,13 +29,21 @@ struct ReaderView: View {
     var body: some View {
         HStack(spacing: 0) {
             if showSidebar && !focusMode {
-                ReaderSidebarView(session: session, theme: theme, aiController: aiController)
+                ReaderSidebarView(session: session, theme: theme)
                     .transition(.move(edge: .leading))
                 Divider()
             }
 
             readingSurface
                 .scaleEffect(focusMode ? 1.015 : 1.0)
+
+            if showChat, !focusMode, let chat {
+                Divider()
+                ChatPanelView(chat: chat) {
+                    withAnimation(AnimationTokens.standard) { showChat = false }
+                }
+                .transition(.move(edge: .trailing))
+            }
         }
         .background(theme.canvasColor)
         .overlay(alignment: .top) {
@@ -69,28 +78,41 @@ struct ReaderView: View {
         .simultaneousGesture(TapGesture().onEnded { readerFocused = true })
         .onAppear {
             readerFocused = true
-            ensureAIController()
+            appModel.beginReading()
             if !sidebarInitialized {
                 showSidebar = appModel.settings.sidebarVisibleByDefault
                 sidebarInitialized = true
             }
         }
-        .onChange(of: session.book.id) { _, _ in ensureAIController() }
+        .onDisappear {
+            appModel.endReading()
+        }
+        .onChange(of: session.currentPageIndex) { _, _ in
+            refreshChatContext()
+        }
         .onChange(of: focusMode) { _, isFocused in
-            // Focus mode is a true book-only immersive view: collapse the library
-            // split-view sidebar (LibraryView listens) and take the window fullscreen.
-            NotificationCenter.default.post(name: .flipbookFocusModeChanged, object: isFocused)
-            setWindowFullScreen(isFocused)
+            // Focus mode is "nothing but the book": drop the marker bar, and make sure the
+            // window is full screen even when auto-fullscreen is disabled in Settings
+            // (leaving again restores the compact window in that case).
+            if isFocused {
+                withAnimation(AnimationTokens.quick) { session.highlighterActive = false }
+                setWindowFullScreen(true)
+            } else if !appModel.settings.openBookFullScreen {
+                setWindowFullScreen(false)
+            }
         }
         .onKeyPress(.leftArrow) {
+            guard !isEditingText else { return .ignored }
             session.jump(toPage: session.currentPageIndex - pageStep)
             return .handled
         }
         .onKeyPress(.rightArrow) {
+            guard !isEditingText else { return .ignored }
             session.jump(toPage: session.currentPageIndex + pageStep)
             return .handled
         }
         .onKeyPress(.space) {
+            guard !isEditingText else { return .ignored }
             session.jump(toPage: session.currentPageIndex + pageStep)
             return .handled
         }
@@ -142,6 +164,12 @@ struct ReaderView: View {
         }
 
         ToolbarItemGroup(placement: .primaryAction) {
+            Button(action: toggleChat) {
+                Label("AI Assistant", systemImage: "sparkles")
+                    .foregroundStyle(showChat ? Color.accentColor : Color.primary)
+            }
+            .help("Ask AI about this book")
+
             Button {
                 withAnimation(AnimationTokens.quick) {
                     session.highlighterActive.toggle()
@@ -153,6 +181,13 @@ struct ReaderView: View {
             .help(session.highlighterActive
                 ? "Turn off highlighter"
                 : "Highlighter — drag to mark, tap a mark to erase")
+
+            Button {
+                _ = session.addStickyNote(pageIndex: session.currentPageIndex)
+            } label: {
+                Label("Add Note", systemImage: "note.text.badge.plus")
+            }
+            .help("Add a sticky note to this page — drag it anywhere, click to collapse")
 
             Button {
                 withAnimation(AnimationTokens.quick) {
@@ -232,11 +267,41 @@ struct ReaderView: View {
                     // turn pages (that's trackpad/arrows), so marking is safe here too.
                     pageTurnAnnotations(spreadLayout)
                 )
+                .overlay(
+                    // Movable, collapsible sticky notes — drawn over the whole surface so
+                    // they can sit in the margins as well as over the page.
+                    StickyNotesLayer(session: session, layout: spreadLayout)
+                )
             }
+            // Book-mode pinch is a cursor-anchored "lean in": the spread magnifies under
+            // the fingers to read small print, then springs back on release — the spread
+            // itself always fits the window, so persistent zoom would strand its corners.
+            .scaleEffect(bookPinchScale, anchor: bookPinchAnchor)
+            .simultaneousGesture(
+                bookPinch,
+                isEnabled: appModel.settings.gesturePinchToZoom && !session.highlighterActive
+            )
         case .scroll:
-            ContinuousScrollView(session: session, theme: theme)
-                .simultaneousGesture(pinchToZoom, isEnabled: appModel.settings.gesturePinchToZoom)
+            ContinuousScrollView(
+                session: session,
+                theme: theme,
+                magnifyEnabled: appModel.settings.gesturePinchToZoom
+            )
         }
+    }
+
+    private var bookPinch: some Gesture {
+        MagnifyGesture()
+            .onChanged { value in
+                bookPinchAnchor = value.startAnchor
+                bookPinchScale = min(max(value.magnification, 0.9), 2.5)
+            }
+            .onEnded { _ in
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
+                    bookPinchScale = 1
+                }
+                bookPinchAnchor = .center
+            }
     }
 
     /// Annotation overlays for a page-turn spread — one per visible page so marks can be
@@ -264,20 +329,13 @@ struct ReaderView: View {
         .position(x: rect.midX, y: rect.midY)
     }
 
-    private var pinchToZoom: some Gesture {
-        MagnifyGesture()
-            .onChanged { value in
-                if pinchBaseZoom == nil {
-                    pinchBaseZoom = session.zoom
-                }
-                session.setZoom((pinchBaseZoom ?? 1) * value.magnification)
-            }
-            .onEnded { _ in
-                pinchBaseZoom = nil
-            }
-    }
-
     // MARK: - Navigation & commands
+
+    /// Whether keyboard focus is inside a text editor (sticky note, page-jump field…) —
+    /// reading keys (space/arrows) must not turn pages out from under typing.
+    private var isEditingText: Bool {
+        NSApp.keyWindow?.firstResponder is NSTextView
+    }
 
     /// Arrow keys move one page while scrolling, one spread (two pages) in book mode.
     private var pageStep: Int {
@@ -327,19 +385,32 @@ struct ReaderView: View {
         .padding(SpacingTokens.md)
     }
 
-    /// Keeps a single `AIChatController` alive for the life of the window, recreating it
-    /// only when the open book changes — shared by the sidebar tab and the centered page.
-    private func ensureAIController() {
-        if aiController?.book.id != session.book.id {
-            aiController = AIChatController(session: session, modelContext: modelContext, settings: appModel.settings)
-        }
-    }
-
     private func commitPageJump() {
         if let page = Int(pageFieldText), page >= 1, page <= session.pageCount {
             session.jump(toPage: page - 1)
         }
         showingPageJump = false
+    }
+
+    /// Opens/closes the AI panel, creating the conversation lazily on first use.
+    private func toggleChat() {
+        if chat == nil {
+            chat = BookChatModel(
+                bookTitle: session.book.title,
+                bookAuthor: session.book.authorHint,
+                appModel: appModel
+            )
+        }
+        withAnimation(AnimationTokens.standard) { showChat.toggle() }
+        if showChat { refreshChatContext() }
+    }
+
+    /// Keeps the conversation's page context current so auto-context can ground answers
+    /// in what the reader is actually looking at.
+    private func refreshChatContext() {
+        guard let chat else { return }
+        let index = session.currentPageIndex
+        chat.updateContext(pageNumber: index + 1, pageText: session.document.page(at: index)?.string)
     }
 
     /// Enters/exits native macOS full screen, matching `on` (no-op if already there).
@@ -352,9 +423,4 @@ struct ReaderView: View {
             }
         }
     }
-}
-
-extension Notification.Name {
-    /// Posted by the reader when focus/immersive mode toggles; carries a `Bool`.
-    static let flipbookFocusModeChanged = Notification.Name("flipbookFocusModeChanged")
 }
