@@ -2,243 +2,222 @@
 
 # Flipbook
 
-**A native macOS reader that treats a PDF like a book — and lets you talk to the people who wrote them.**
+**A macOS reader that treats a PDF like a book — and lets you talk to the people who wrote them.**
 
-[![Platform](https://img.shields.io/badge/platform-macOS%2026%2B-1d1d1f?style=flat-square&logo=apple)](https://www.apple.com/macos/)
+[![Platform](https://img.shields.io/badge/macOS-26%2B-1d1d1f?style=flat-square&logo=apple)](https://www.apple.com/macos/)
 [![Swift](https://img.shields.io/badge/Swift-6.2-F05138?style=flat-square&logo=swift&logoColor=white)](https://swift.org)
-[![SwiftUI](https://img.shields.io/badge/SwiftUI%20%2B%20AppKit-0B84FF?style=flat-square)](https://developer.apple.com/xcode/swiftui/)
-[![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
-[![BYOK](https://img.shields.io/badge/AI-bring%20your%20own%20key-8A63D2?style=flat-square)](#-ai-that-actually-knows-your-books)
+[![License](https://img.shields.io/badge/License-MIT-2f6f4e?style=flat-square)](LICENSE)
+[![BYOK](https://img.shields.io/badge/AI-bring_your_own_key-6b4fbb?style=flat-square)](#ai)
 
 </div>
 
----
+<img src="docs/screenshots/01-reader.png" alt="A two-page spread in Flipbook's reader, with the contents sidebar open" width="100%">
 
-Most PDF readers show you a document. Flipbook gives you a **book** — a two-page spread with a
-spine, paper edges, and a page that lifts, shades itself as it rises, and falls under your finger.
-Then it adds the thing a paper book can't: **the author, available to talk.**
+Flipbook renders PDFs as a bound two-page spread — cover board, centre spine, stacked page
+edges — and turns pages with a gesture-tracked 3D flip rather than a cross-fade. Around that
+sits a library, an annotation layer, reading stats, and an AI companion that answers from the
+actual text of your books.
 
-<div align="center">
-  <img src="docs/screenshots/01-home.png" alt="Flipbook's Home dashboard: continue reading, reading streak, weekly minutes, and your shelf" width="100%">
-</div>
-
----
-
-## Why this exists
-
-Reading apps tend to fail in one of two directions. Either they're a thin wrapper around a PDF view
-with no sense of occasion, or they bolt on an AI sidebar that summarises text it barely understands
-and answers in the same flat corporate voice as everything else.
-
-Flipbook takes both parts seriously:
-
-- **The reading surface is hand-built.** The page turn is a Core Animation transform tracked 1:1
-  against your trackpad, with per-face shading, a cast shadow that moves with the lifting sheet,
-  and a spring that carries your gesture's velocity. It's interruptible, reversible, and doesn't
-  drop frames mid-turn.
-- **The AI is grounded in the actual books.** Not a vague impression of the title — a distilled
-  reference document built from the full text, cached, and injected as the author's own memory.
+Native SwiftUI and AppKit. No backend, no account, no telemetry.
 
 ---
 
-## Features
+## Contents
 
-### 📖 The reading experience
+- [Reading](#reading)
+- [Annotation](#annotation)
+- [Library](#library)
+- [AI](#ai)
+- [Privacy](#privacy)
+- [Build](#build)
+- [Architecture](#architecture)
+- [Roadmap](#roadmap)
+- [License](#license)
+
+---
+
+## Reading
+
+The page turn is a Core Animation transform tracked 1:1 against the trackpad. Each face shades
+itself as it lifts, the turning sheet casts a moving shadow on the page beneath, and the release
+spring carries your gesture's velocity. It's interruptible and reversible mid-turn.
 
 | | |
 |---|---|
-| **Book mode** | Two-page spread with cover board, centre spine, and stacked page edges that shift as you read. Turn with a trackpad swipe or the arrow keys. |
-| **Realistic page turns** | Interruptible 3D flips with per-face shading, a moving cast shadow, trilinear filtering, and velocity-carried spring settling. |
-| **Continuous scroll** | A lazy vertical stack of rendered pages with book-like gaps and paper shadows, plus pinch-to-zoom. |
-| **Reflow mode** | The book's text re-typeset natively in your choice of serif, sans, rounded, or mono — coloured by the active theme. |
-| **9 reading themes** | Warm Paper · Eggshell · Cream · Beige · Sepia · Original · Dark Grey · Midnight · True Black, with warmth and brightness trim. |
-| **Auto contents** | PDFs with no table of contents get one synthesised from printed contents pages and font-metric heading detection. |
-| **Night mode** | Switches to your dark theme between 8 PM and 7 AM, and back in the morning. |
-| **Focus mode** | Nothing but the book: chrome hidden, sidebar collapsed, full screen. |
+| **Book mode** | Two-page spread; narrow windows fall back to one large page. |
+| **Continuous scroll** | Lazy vertical stack of rendered pages, pinch to zoom. |
+| **Reflow** | The text re-typeset in your own font and size. |
+| **Themes** | Nine: Warm Paper, Eggshell, Cream, Beige, Sepia, Original, Dark Grey, Midnight, True Black — plus warmth and brightness trim. |
+| **Contents** | Uses the PDF outline, or synthesises one from printed contents pages and font-metric heading detection. |
+| **Night mode** | Switches to your dark theme between 8 PM and 7 AM. |
+| **Focus mode** | Chrome hidden, sidebar collapsed, full screen. |
 
-### ✍️ Annotation
-
-- **Freehand highlighter** — drag to mark, tap a mark to erase, with a discoverable marker bar
-- **Sticky notes** — drop one anywhere on a page, drag it, click to collapse
-- **Bookmarks** with a ribbon on the page (⌘D)
-- **Real text selection** on text PDFs, falling back to region highlighting on scans
-
-### 🗂 Library
-
-- Shelves that compute themselves: **All Books · Reading Now · Favourites · Finished · Not Started**
-- **Folders**, search, and sorting by date added, last read, title, or author
-- **Rename and edit** any book's metadata
-- **Reading dashboard** — daily minutes, a weekly chart, streaks, and a daily goal
-- Drag-and-drop import, ⌘O, or **Open With → Flipbook** from Finder
-- Books are referenced by security-scoped bookmark, so **moving a PDF doesn't break your library** —
-  and if it ever does, a "Locate File…" flow relinks it
-
-### 🤖 AI that actually knows your books
-
-- **Ask about the page you're on** — the assistant receives the current page's text automatically
-- **Talk to the Author** — converse with the writer behind any book in your library
-- **Choose the scope** — one specific book, or everything that author wrote
-- **Multiple saved conversations** per author, persisted across launches
-- **Four providers, your key** — Anthropic (Claude), OpenAI, Google Gemini, and YUNWU
-- **Personalisation** — assistant name, response style, and standing instructions
+Themes are applied to the rasterised page by a Core Image compositor and cached, not layered over
+it at draw time. Dark themes use a lightness-preserving smart invert that keeps photographs
+positive instead of colour-negating them.
 
 ---
 
-## Talking to authors
+## Annotation
 
-<div align="center">
-  <img src="docs/screenshots/02-authors.png" alt="The Authors view listing every author in the library, ready to talk" width="100%">
-</div>
+<img src="docs/screenshots/03-highlights.png" alt="Highlighting text with the marker bar open" width="100%">
 
-Every author in your library becomes someone you can sit down with. Ask what they actually meant,
-where readers misread them, or for advice on something you're stuck on — and get an answer in their
-voice, arguing their positions, quoting their own lines back at you.
+- **Freehand highlighter** — drag to mark, tap a mark to erase, five colours
+- **Sticky notes** — drop one anywhere on a page, drag it, click to collapse
+- **Bookmarks** with a ribbon on the page (⌘D)
+- Real text selection on text PDFs; region highlighting on scans
 
-Their replies render in serif, unbubbled, on a measured column. It reads like a letter, not a chat app.
+---
 
-### The hard part: a book is too big to send
+## Library
 
-A 400-page book is roughly **250,000–1,000,000 tokens**. You can't put that in a prompt on every
-message — not affordably, and mostly not at all. So Flipbook distils it **once**, with a map–reduce
-pipeline built around cost:
+<img src="docs/screenshots/02-library.png" alt="The library grid showing four books with covers" width="100%">
+
+Shelves compute themselves from reading progress — **All Books, Reading Now, Favourites,
+Finished, Not Started** — alongside folders, search, and sorting by date added, last read, title,
+or author. Books are referenced by security-scoped bookmark, so moving a PDF on disk doesn't break
+the library; if resolution ever fails, a *Locate File…* flow relinks it.
+
+<img src="docs/screenshots/05-dashboard.png" alt="The Home dashboard with continue reading, streak, weekly minutes and library totals" width="100%">
+
+The dashboard tracks daily minutes, a weekly chart, streaks, and an optional daily goal.
+
+---
+
+## AI
+
+<img src="docs/screenshots/04-authors.png" alt="A conversation with the Charles T. Munger persona, quoting Poor Charlie's Almanack" width="100%">
+
+Two features, both bring-your-own-key:
+
+**Ask about what you're reading.** A panel in the reader that receives the current page's text
+automatically, so "explain this page" works without copy-paste.
+
+**Talk to the Author.** Every author in your library becomes someone you can question. Pick
+whether a conversation draws on one book or everything that author wrote; threads are saved per
+author and persist across launches.
+
+### Making a book fit in a prompt
+
+A 400-page book is roughly 250k–1M tokens. It can't go in a prompt on every message, so Flipbook
+distils it once, with a map–reduce pass built around cost:
 
 ```
-   Full book text
-         │
-         ▼
-   ~28k-char chunks  ──▶  summarised 4-at-a-time by the provider's CHEAPEST model
-                          (Claude Haiku · gpt-5-mini · Gemini Flash)
-         │
-         ▼
-   chunk notes (a few thousand tokens)
-         │
-         ▼
-   ONE compose call on your main model
-         │
-         ▼
- ┌───────────────────────────────────────────────────────────────┐
- │  BookDigest — cached forever in SwiftData                     │
- │  Overview · Core Arguments · How It Unfolds · Key Terms ·     │
- │  Voice · Worldview · Quotable Lines (verbatim)                │
- └───────────────────────────────────────────────────────────────┘
+book text ──▶ ~28k-char chunks ──▶ summarised 4-at-a-time by the provider's CHEAPEST model
+                                    (Claude Haiku · gpt-5-mini · Gemini Flash)
+                                              │
+                                    chunk notes (a few thousand tokens)
+                                              │
+                                    one compose call on your main model
+                                              │
+                                    BookDigest, cached forever in SwiftData
+                                    overview · arguments · structure · key terms
+                                    · voice · worldview · verbatim quotes
 ```
 
-Because ~99% of the tokens are spent in the map phase, and the map phase runs on the cheap tier,
-**distilling a whole book costs cents rather than dollars** — and only ever happens once per book.
-A unit test asserts the bulk model is never the flagship, so that property can't silently regress.
+Nearly all the tokens are spent in the map phase, and the map phase runs on the cheap tier — so
+distilling a whole book costs cents, once. A unit test asserts the bulk model is never the
+flagship, so that can't silently regress.
 
-The persona is built the same way. `AuthorPersonaBuilder` writes a durable character file —
-biography, convictions, how they reason, voice with sample phrasings, their body of work, how they
-characteristically advise — grounded in those digests plus the model's own knowledge of the real
-person. It's cached as an `AuthorPersona` and composed with the in-scope digests at conversation time.
+The persona is built the same way and cached: a character file covering biography, convictions,
+reasoning habits, voice, and how that author advises — grounded in the digests plus the model's
+knowledge of the real person. At conversation time it's composed with the in-scope digests, which
+is why the replies quote the book rather than paraphrase it.
+
+### Providers
+
+Anthropic uses its native Messages API; the rest are OpenAI-Chat-Completions compatible and share
+one client. Both formats stream over SSE behind a single interface. There's no official Swift SDK
+for any of them, so `AIService` speaks the wire protocols directly.
+
+| Provider | Endpoint | Get a key |
+|---|---|---|
+| Anthropic (Claude) | `api.anthropic.com` | [console.anthropic.com](https://console.anthropic.com/settings/keys) |
+| OpenAI | `api.openai.com/v1` | [platform.openai.com](https://platform.openai.com/api-keys) |
+| Google Gemini | `generativelanguage.googleapis.com/v1beta/openai` | [aistudio.google.com](https://aistudio.google.com/apikey) |
+| YUNWU | `yunwu.ai/v1` | [yunwu.ai](https://yunwu.ai) |
+
+Set up in **Settings → AI**: choose a provider, save the key, test the connection, enable. The
+model field is free text with presets, so a model released tomorrow works tomorrow. Assistant
+name, response style, and standing instructions are configurable there too.
 
 ---
 
 ## Privacy
 
-Flipbook has no backend. No account, no telemetry, nothing uploaded anywhere.
+There is no backend. No account, no telemetry, nothing uploaded.
 
-- **Your API keys live in the macOS Keychain** — one per provider, never in SwiftData, never in a
-  plain file, never in this repo.
-- **Requests go straight from your Mac to the provider you chose**, over TLS. They never pass
-  through any server of ours, because there isn't one.
-- **Your books never leave your machine**, except as the text you deliberately send to your own AI
-  provider — and page-context sharing can be switched off entirely in Settings.
+- API keys live in the **macOS Keychain**, one per provider — never in SwiftData, never in a file,
+  never in this repo.
+- Requests go straight from your Mac to the provider you chose, over TLS.
+- Your books stay on your machine, except for the text you deliberately send to your own provider.
+  Page-context sharing can be turned off in Settings.
 
 ---
 
-## Getting started
+## Build
 
-### Requirements
-
-- macOS 26 or later
-- Xcode 26+ (Swift 6.2)
-- [XcodeGen](https://github.com/yonaskolb/XcodeGen) — `brew install xcodegen`
-
-### Build and run
+Requires macOS 26+, Xcode 26+ (Swift 6.2), and [XcodeGen](https://github.com/yonaskolb/XcodeGen).
 
 ```bash
+brew install xcodegen
 git clone https://github.com/rayhankhilji/flipbook.git
 cd flipbook
-
-# The Xcode project is generated from project.yml, not checked in as source of truth
-xcodegen generate
-
-open Flipbook.xcodeproj    # then ⌘R
+xcodegen generate      # the .xcodeproj is generated from project.yml
+open Flipbook.xcodeproj
 ```
 
-> **Note**
-> Re-run `xcodegen generate` whenever you add or remove a source file.
-
-### Tests
+Re-run `xcodegen generate` after adding or removing a source file.
 
 ```bash
+# tests
 cd Packages/FlipbookCore && swift test
 
-# Themed-page snapshot PNGs, for visual inspection
+# themed-page snapshots, written out for visual inspection
 SNAPSHOT_DIR=/tmp/snaps swift test --filter VisualSnapshotTests
 ```
-
-### Turn on the AI features
-
-1. **⌘,** to open Settings, then the **AI** tab
-2. Pick a provider — Anthropic, OpenAI, Google Gemini, or YUNWU
-3. Paste your API key, hit **Save Key**, then **Test Connection**
-4. Toggle **Enable AI features** on
-
-The model field is free text with presets, so a newly released model works the day it ships without
-waiting for an app update.
-
-| Provider | Get a key |
-|---|---|
-| Anthropic (Claude) | [console.anthropic.com](https://console.anthropic.com/settings/keys) |
-| OpenAI | [platform.openai.com](https://platform.openai.com/api-keys) |
-| Google Gemini | [aistudio.google.com](https://aistudio.google.com/apikey) |
-| YUNWU | [yunwu.ai](https://yunwu.ai) |
 
 ---
 
 ## Architecture
 
-An app shell over two local Swift packages, so the domain logic is testable without launching a window.
+An app target over two local Swift packages, so the domain logic is testable without launching a
+window.
 
 ```
 Flipbook/
-├── Flipbook/                     # App target — SwiftUI scenes and AppKit bridges
-│   ├── App/                      # AppModel, scene commands, window configuration
-│   └── Features/
-│       ├── Library/              # Shelves, folders, search, import, book editing
-│       ├── Dashboard/            # Reading stats, streaks, goals
-│       ├── Reader/               # Reading surfaces + PageTurn/ (Core Animation)
-│       ├── Highlights/           # Highlighter, sticky notes, annotation overlays
-│       ├── AI/                   # Chat panel, author personas, Markdown rendering
-│       └── Settings/             # Preferences window
-│
-└── Packages/
-    ├── FlipbookCore/             # No SwiftUI dependency — pure domain
-    │   ├── AI/                   # Providers, streaming service, distiller, personas
-    │   ├── Document/             # PDF access, spread geometry, reflow extraction
-    │   ├── Rendering/            # PageRenderer actor, image cache, theme compositor
-    │   ├── Models/               # SwiftData models
-    │   └── Persistence/          # ModelContainer factory
-    └── FlipbookDesignSystem/     # Colour, type, spacing, motion tokens; components
+├── App/                    AppModel, scene commands, window management
+└── Features/
+    ├── Library/            Shelves, folders, search, import, editing
+    ├── Dashboard/          Reading stats, streaks, goals
+    ├── Reader/             Reading surfaces; PageTurn/ holds the Core Animation view
+    ├── Highlights/         Highlighter, sticky notes, annotation overlays
+    ├── AI/                 Chat panel, author personas, Markdown rendering
+    └── Settings/           Preferences window
+
+Packages/
+├── FlipbookCore/           No SwiftUI dependency
+│   ├── AI/                 Providers, streaming service, distiller, persona builder
+│   ├── Document/           PDF access, spread geometry, reflow extraction
+│   ├── Rendering/          PageRenderer actor, image cache, theme compositor
+│   ├── Models/             SwiftData models
+│   └── Persistence/        ModelContainer factory
+└── FlipbookDesignSystem/   Colour, type, spacing and motion tokens; shared components
 ```
 
-**Decisions worth calling out:**
+Three decisions that shaped the rest:
 
-- **`PageRenderer` is an actor.** All PDFKit drawing is serialised off the main thread by
-  construction; the main thread only ever receives finished `CGImage`s. Renders are cached by
-  (page, zoom bucket, theme), so a page is never rasterised twice.
-- **The page turn drops to AppKit.** An interruptible, gesture-tracked, reversible 3D turn isn't
-  expressible with SwiftUI's fire-and-forget transitions, so `PageTurnNSView` owns a Core Animation
-  layer tree directly.
-- **Themes are baked into the bitmap, not layered over it.** A Core Image compositor applies each
-  theme once per cached page — including a lightness-preserving smart invert for dark themes that
-  keeps photographs positive instead of colour-negating them.
-- **There is no AI SDK.** Swift has no official client for any of these providers, so `AIService`
-  speaks the raw wire protocols: Anthropic's Messages API, and OpenAI Chat Completions for the other
-  three (Gemini through its OpenAI-compatible endpoint, YUNWU as a relay). Both formats stream over
-  SSE behind one interface.
+**`PageRenderer` is an actor.** All PDFKit drawing is serialised off the main thread by
+construction; the main thread only receives finished `CGImage`s. Renders are cached by
+(page, zoom bucket, theme), so a page is never rasterised twice.
+
+**The page turn is AppKit.** An interruptible, gesture-tracked, reversible 3D turn isn't
+expressible with SwiftUI's fire-and-forget transitions, so `PageTurnNSView` owns a Core Animation
+layer tree directly.
+
+**Markdown is rendered by hand.** SwiftUI's `Text(markdown:)` only handles inline styling, so
+`MarkdownText` parses block structure — headings, lists, quotes, code — which is what lets an
+author persona quote a passage properly.
 
 ---
 
@@ -248,16 +227,8 @@ Flipbook/
 - [ ] Notes and reflections attached to a highlight, with dated threads
 - [ ] Rich attachments — images and auto-embedding links
 - [ ] EPUB alongside PDF
-- [ ] Per-book theme overrides, annotations export, and OCR for scanned PDFs
-- [ ] Quick Look preview extension, Sparkle updates, notarised builds
-
----
-
-## Contributing
-
-Issues and pull requests are welcome. If you're changing the reading surface, please include a short
-screen recording of the page turn — it's the easiest part of the app to regress and the hardest to
-review from a diff.
+- [ ] Per-book theme overrides, annotation export, OCR for scanned PDFs
+- [ ] Quick Look extension, Sparkle updates, notarised builds
 
 ---
 
@@ -265,6 +236,4 @@ review from a diff.
 
 [MIT](LICENSE) © 2026 Rayhan Khilji
 
-<div align="center">
-<sub>Built with SwiftUI, AppKit, SwiftData, Core Animation, and Core Image.</sub>
-</div>
+<sub>Screenshots use a sample library. Built with SwiftUI, AppKit, SwiftData, Core Animation and Core Image.</sub>
